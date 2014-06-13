@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <sstream>
 #include <time.h>
 
 #include "../AppManager/BladeLoader.h"
@@ -154,12 +155,24 @@ void loadData(const string queryFile,const string dataFile,int dataFile_col,vect
 
 int WrapperScan::runCPUEu(){
 		int topk = 5;
+		int dimensionNum = 32;
+		int queryNum = 16;
+		string dataFileHolder = "data/Dodgers/Dodgers";
+		int dataFile_col  = 1;
+
 		vector<vector<int> > qdata;
 		vector<int> data;
-		string dataFile = "data/Dodgers/Dodgers.csv";
-		int dataFile_col  = 1;
-		string queryFile = "data/Dodgers/Dodgers_d32_q16_dir.query";
 
+		stringstream ssDataFile;
+		ssDataFile<<dataFileHolder<<".csv";
+		string dataFile = ssDataFile.str();
+		cout<<dataFile<<endl;
+
+
+		stringstream ssQueryFile;
+		ssQueryFile<<dataFileHolder<<"_d"<< dimensionNum<<"_q"<<queryNum <<"_dir.query";
+		string queryFile = ssQueryFile.str();
+		cout<<queryFile<<endl;
 
 
 		loadData(queryFile,dataFile,dataFile_col, qdata,data);
