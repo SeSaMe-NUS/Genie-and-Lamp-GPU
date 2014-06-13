@@ -9,6 +9,7 @@
 #include "IndexBuilder/invListBuilder.h"
 #include "IndexBuilder/DataProcess.h"
 #include "BladeLoader.h"
+#include "../CONSTANT.h"
 
 #include <sstream>
 using namespace std;
@@ -57,8 +58,8 @@ int WrapperIndexBuilder::runSingleIndexBuilder(void) {
 	//string dataHolder = "data/calit2/CalIt2_7";
 	//int fcol = 3;
 
-	int dimensionNumber = 32;
-	int queryNum = 16;
+	int dimensionNumber = DIMENSIONNUM;
+	int queryNum = QUERYNUM;
 
 
 	string winType = "s";

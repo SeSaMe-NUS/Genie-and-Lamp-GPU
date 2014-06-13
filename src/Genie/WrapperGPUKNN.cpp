@@ -15,6 +15,8 @@ using namespace std;
 #include "GPUKNN/generalization.h"
 #include "GPUKNN/GPUManager.h"
 
+#include "../CONSTANT.h"
+
 
 WrapperGPUKNN::WrapperGPUKNN()
 {
@@ -101,12 +103,12 @@ WrapperGPUKNN::~WrapperGPUKNN()
 
 	GPUSpecification test_spec;
 	test_spec.numOfDocToExpand = 100;
-	test_spec.totalDimension = 32;
-	int queryNum = 16;
+	test_spec.totalDimension = DIMENSIONNUM;
+	int queryNum = QUERYNUM;
 	float lp = 2;
 	float upwardDistBound = 0;
 	float downwardDistbound = 0;
-	int topK = 5;
+	int topK = TOPK;
 	//string dataHolder = "data/calit2/CalIt2_7";
 	string dataHolder = "data/Dodgers/Dodgers";
 

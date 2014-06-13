@@ -16,6 +16,7 @@
 #include "../AppManager/IndexBuilder/DataProcess.h"
 #include "Scan/GPUScan.h"
 #include "Scan/CPUScan.h"
+#include "../CONSTANT.h"
 
 
 using namespace std;
@@ -154,9 +155,9 @@ void loadData(const string queryFile,const string dataFile,int dataFile_col,vect
 }
 
 int WrapperScan::runCPUEu(){
-		int topk = 5;
-		int dimensionNum = 32;
-		int queryNum = 16;
+		int topk = TOPK;
+		int dimensionNum = DIMENSIONNUM;
+		int queryNum = QUERYNUM;
 		string dataFileHolder = "data/Dodgers/Dodgers";
 		int dataFile_col  = 1;
 
