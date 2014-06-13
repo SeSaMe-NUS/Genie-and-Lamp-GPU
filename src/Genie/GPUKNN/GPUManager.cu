@@ -414,6 +414,39 @@ bool GPUManager::bi_direction_query_KernelPerDim (int threshold, int topKValue, 
 	cudaEventElapsedTime(&elapsedTime, start, stop);
 	exec_time[4] += elapsedTime;
 
+	//=============================== Yiwei's Bucket Impl ========================
+	cout << "GPUManager::bi_direction_query(): 14 -- terminate_check_KernelPerQuery_Bucket()" << endl;
+	int number_of_parts = this->invert_list_spec_host.numOfQuery;
+	host_vector<Result> h_result_ub_sorted = d_result_ub_sorted;
+	float minub = h_result_ub_sorted[0].ub, maxub = h_result_ub_sorted[0].ub;
+	float minlb = h_result_ub_sorted[0].lb, maxlb = h_result_ub_sorted[0].lb;
+	for(int i=0; i<h_result_ub_sorted.size(); i++)
+	{
+		if(h_result_ub_sorted[i].ub > maxub)
+			maxub = h_result_ub_sorted[i].ub;
+		if(h_result_ub_sorted[i].ub < minub)
+			minub = h_result_ub_sorted[i].ub;
+		if(h_result_ub_sorted[i].lb > maxlb)
+			maxlb = h_result_ub_sorted[i].lb;
+		if(h_result_ub_sorted[i].lb < minlb)
+			minlb = h_result_ub_sorted[i].lb;
+	}
+	float MIN = (minub<minlb) ? minub : minlb;
+	float MAX = (maxub>maxlb) ? maxub : maxlb;
+	cudaEventRecord(start, 0);
+	terminateCheck_kSelection_KernelPerQuery_Bucket(
+			&d_result_ub_sorted,
+			&query_result_count,
+			number_of_parts,
+			topKValue,
+			MIN, MAX,
+			raw_pointer_cast(d_valid_query.data()));
+	terminate_sum = thrust::reduce(d_valid_query.begin(), d_valid_query.end());
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&elapsedTime, start, stop);
+	exec_time[14] += elapsedTime;
+	//=============================== Yiwei's Bucket Impl ========================
 
 	cout<< "GPUManager::bi_direction_query(): 4 -- extract_topK_KernelPerQuery()"<< endl;
 	device_vector<Result> d_result(	this->invert_list_spec_host.numOfQuery * topKValue);
