@@ -1073,6 +1073,20 @@ __global__ void output_check(Result* data, int* end_index, int k, int* output)
         }
     }
 }
+struct compare_lb_value {
+    __host__ __device__
+    bool operator()(Result lhs, Result rhs)
+    {
+      return lhs.lb < rhs.lb;
+    }
+};
+struct compare_ub_value {
+    __host__ __device__
+    bool operator()(Result lhs, Result rhs)
+    {
+      return lhs.ub < rhs.ub;
+    }
+};
 struct ValueOfUb {
 	__host__ __device__ float valueOf(Result data)
 	{
@@ -1090,7 +1104,6 @@ void terminateCheck_kSelection_KernelPerQuery_Bucket(
 		device_vector<int> *end_idx,
 		const int number_of_parts,
 		const int K,
-		const float MIN, const float MAX,
 		int* output)
 {
 	device_vector<int> start_index(number_of_parts);
@@ -1101,9 +1114,15 @@ void terminateCheck_kSelection_KernelPerQuery_Bucket(
 	for(int i=0; i<number_of_parts; i++) { h_k1[i] = K, h_k2[i] = 1; }
 	device_vector<int> d_k1 = h_k1, d_k2 = h_k2;
 
-	bucket_topk(boundData, selUb, MIN, MAX, &d_k1, end_idx, number_of_parts);
+	device_vector<Result>::iterator minData = thrust::min_element((*boundData).begin(), (*boundData).end(), compare_lb_value());
+	device_vector<Result>::iterator maxData = thrust::max_element((*boundData).begin(), (*boundData).end(), compare_ub_value());
+	device_vector<Result> d_min(1), d_max(1);
+	thrust::copy(minData, minData+1, d_min.begin());
+	thrust::copy(maxData, maxData+1, d_max.begin());
+	host_vector<Result> h_min = d_min, h_max = d_max;
+	bucket_topk(boundData, selUb, h_min[0].lb, h_max[0].ub, &d_k1, end_idx, number_of_parts);
 	start_index_offset<<<number_of_parts, THREADS_PER_BLOCK>>>(rpc(start_index), rpc(*end_idx), K+1);
-	bucket_topk(boundData, selLb, MIN, MAX, &d_k2, &start_index, end_idx, number_of_parts);
+	bucket_topk(boundData, selLb, h_min[0].lb, h_max[0].ub, &d_k2, &start_index, end_idx, number_of_parts);
 	output_check<<<number_of_parts, THREADS_PER_BLOCK>>>(rpc(*boundData), rpc(*end_idx), K, output);
 }
 /*

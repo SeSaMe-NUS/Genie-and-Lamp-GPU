@@ -253,7 +253,6 @@ void terminateCheck_kSelection_KernelPerQuery_Bucket(
 		device_vector<int> *end_idx,
 		const int number_of_parts,
 		const int K,
-		const float MIN, const float MAX,
 		int* output);
 
 
