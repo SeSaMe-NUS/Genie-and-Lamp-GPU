@@ -8,8 +8,8 @@
 #ifndef CONSTANT_H_
 #define CONSTANT_H_
 
-#define TOPK 5
-#define DIMENSIONNUM 32
-#define QUERYNUM 16
+#define TOPK 50
+#define DIMENSIONNUM 256
+#define QUERYNUM 128
 
 #endif /* CONSTANT_H_ */

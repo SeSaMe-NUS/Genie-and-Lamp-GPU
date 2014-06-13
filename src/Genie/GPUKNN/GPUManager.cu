@@ -391,6 +391,8 @@ bool GPUManager::bi_direction_query_KernelPerDim (int threshold, int topKValue, 
 	cudaEventElapsedTime(&elapsedTime, start, stop);
 	exec_time[3] += elapsedTime;
 
+	//=====================Old impl=================================
+	/*
 	cout
 			<< "GPUManager::bi_direction_query(): 4 -- terminate_check_KernelPerQuery()"
 			<< endl;
@@ -412,10 +414,11 @@ bool GPUManager::bi_direction_query_KernelPerDim (int threshold, int topKValue, 
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&elapsedTime, start, stop);
-	exec_time[4] += elapsedTime;
+	exec_time[4] += elapsedTime;*/
+	//=====================Old impl=================================
 
 	//=============================== Yiwei's Bucket Impl ========================
-	cout << "GPUManager::bi_direction_query(): 14 -- terminate_check_KernelPerQuery_Bucket()" << endl;
+	cout << "GPUManager::bi_direction_query(): 4 -- terminate_check_KernelPerQuery_Bucket()" << endl;
 	int number_of_parts = this->invert_list_spec_host.numOfQuery;
 	cudaEventRecord(start, 0);
 	terminateCheck_kSelection_KernelPerQuery_Bucket(
@@ -424,11 +427,11 @@ bool GPUManager::bi_direction_query_KernelPerDim (int threshold, int topKValue, 
 			number_of_parts,
 			topKValue,
 			raw_pointer_cast(d_valid_query.data()));
-	terminate_sum = thrust::reduce(d_valid_query.begin(), d_valid_query.end());
+	int terminate_sum = thrust::reduce(d_valid_query.begin(), d_valid_query.end());
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&elapsedTime, start, stop);
-	exec_time[14] += elapsedTime;
+	exec_time[4] += elapsedTime;
 	//=============================== Yiwei's Bucket Impl ========================
 
 	cout<< "GPUManager::bi_direction_query(): 4 -- extract_topK_KernelPerQuery()"<< endl;
