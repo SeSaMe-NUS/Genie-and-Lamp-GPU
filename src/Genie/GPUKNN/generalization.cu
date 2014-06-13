@@ -20,6 +20,7 @@
 #include <thrust/scan.h>
 
 #include "generalization.h"
+#include "../../lib/bucket_topk/bucket_topk.h"
 
 using namespace std;
 using namespace thrust;
@@ -1037,6 +1038,77 @@ __global__ void extract_topK_KernelPerQuery ( Result* ub_sorted, int* end_idx, R
 	}
 }
 
+/*******************************************************************************************
+ * This is Yiwei's implementation of topk
+ */
+__global__ void start_index_offset(int* start_index, int* end_index, int offset)
+{
+	int bid = blockIdx.x;
+	int tid = threadIdx.x;
+	if(tid==0)
+	{
+		start_index[bid] = (bid==0) ? 0 : end_index[bid-1];
+		start_index[bid] += offset;
+	}
+}
+__global__ void output_check(Result* data, int* end_index, int k, int* output)
+{
+	int bid = blockIdx.x;
+	int tid = threadIdx.x;
+	int start = (bid==0) ? 0 : end_index[bid-1];
+	int end = end_index[bid];
+
+	output[bid] = 0;
+
+	int round = (end-start)/blockDim.x + 1;
+    int offset = blockDim.x;
+    int index;
+    for(int i=0; i<round; i++)
+    {
+        index = (start+tid)+i*offset;
+        if(index < start+k)
+        {
+        	if(data[start+k].lb < data[index].ub)
+        		output[bid] = 1;
+        }
+    }
+}
+struct ValueOfUb {
+	__host__ __device__ float valueOf(Result data)
+	{
+		return data.ub;
+	}
+};
+struct ValueOfLb {
+	__device__ float valueOf(Result data)
+	{
+		return data.lb;
+	}
+};
+void terminateCheck_kSelection_KernelPerQuery_Bucket(
+		device_vector<Result> *boundData,
+		device_vector<int> *end_idx,
+		const int number_of_parts,
+		const int K,
+		const float MIN, const float MAX,
+		int* output)
+{
+	device_vector<int> start_index(number_of_parts);
+	ValueOfUb selUb;
+	ValueOfLb selLb;
+	device_vector<int> d_result_ub, d_result_lb;
+	host_vector<int> h_k1(number_of_parts), h_k2(number_of_parts);
+	for(int i=0; i<number_of_parts; i++) { h_k1[i] = K, h_k2[i] = 1; }
+	device_vector<int> d_k1 = h_k1, d_k2 = h_k2;
+
+	bucket_topk(boundData, selUb, MIN, MAX, &d_k1, end_idx, number_of_parts);
+	start_index_offset<<<number_of_parts, THREADS_PER_BLOCK>>>(rpc(start_index), rpc(*end_idx), K+1);
+	bucket_topk(boundData, selLb, MIN, MAX, &d_k2, &start_index, end_idx, number_of_parts);
+	output_check<<<number_of_parts, THREADS_PER_BLOCK>>>(rpc(*boundData), rpc(*end_idx), K, output);
+}
+/*
+ * This is Yiwei's implementation of topk
+ *******************************************************************************************/
 
 //=============================================the following code is depressed and should not be used. Finally all the code will be removed from this project
 /**

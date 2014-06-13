@@ -248,6 +248,14 @@ __global__ void terminateCheck_kSelection_KernelPerQuery(
 
 __global__ void extract_topK_KernelPerQuery ( Result* ub_sorted, int* end_idx, Result* output, int K);
 
+void terminateCheck_kSelection_KernelPerQuery_Bucket(
+		device_vector<Result> *boundData,
+		device_vector<int> *end_idx,
+		const int number_of_parts,
+		const int K,
+		const float MIN, const float MAX,
+		int* output);
+
 
 
 //=========following code: depressed functions====================
