@@ -102,7 +102,7 @@ WrapperGPUKNN::~WrapperGPUKNN()
  int WrapperGPUKNN::runOnIntegerDataFile(){
 
 	GPUSpecification test_spec;
-	test_spec.numOfDocToExpand = 100;
+	test_spec.numOfDocToExpand = 1000;
 	test_spec.totalDimension = DIMENSIONNUM;
 	int queryNum = QUERYNUM;
 	float lp = 2;
@@ -168,7 +168,7 @@ WrapperGPUKNN::~WrapperGPUKNN()
 		iteration++;
 		cout << "iteration "<< iteration <<" takes time: " << time << endl;
 
-		test_manager.print_result_vec(temp_result);
+		//test_manager.print_result_vec(temp_result);
 	}
 
 	test_manager.printPrunStatistics();

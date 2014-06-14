@@ -1059,7 +1059,7 @@ __global__ void output_check(Result* data, int* end_index, int k, int* output)
 	int end = end_index[bid];
 
 	output[bid] = 0;
-
+	__syncthreads();
 	int round = (end-start)/blockDim.x + 1;
     int offset = blockDim.x;
     int index;
