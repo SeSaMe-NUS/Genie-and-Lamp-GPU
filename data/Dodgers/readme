@@ -1,0 +1,9 @@
+1. Dodgers Loop Sensor Data Set 
+http://archive.ics.uci.edu/ml/datasets/Dodgers+Loop+Sensor
+maximum size: 900KB
+description:
+This loop sensor data was collected for the Glendale on ramp for the 101 North freeway in Los Angeles. 
+It is close enough to the stadium to see unusual traffic after a Dodgers game,
+but not so close and heavily used by game traffic so that the signal for the extra traffic is overly obvious.
+
+The observations were taken over 25 weeks, 288 time slices per day (5 minute count aggregates). 
