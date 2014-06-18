@@ -391,77 +391,46 @@ bool GPUManager::bi_direction_query_KernelPerDim (int threshold, int topKValue, 
 	exec_time[3] += elapsedTime;
 
 	//=====================Old impl=================================
-
-	//cout
-	//		<< "GPUManager::bi_direction_query(): 4 -- terminate_check_KernelPerQuery()"
-	//		<< endl;
-	device_vector<Result> d_result_temp(d_result_ub_sorted.size());//create temp buffer for checking
-	device_vector<Result> d_result_ub_sorted_2 = d_result_ub_sorted;
-	cudaEventRecord(start, 0);
-
-
-	terminateCheck_kSelection_KernelPerQuery<<<this->invert_list_spec_host.numOfQuery,	THREAD_PER_BLK>>>(
-			raw_pointer_cast(d_result_ub_sorted.data()),
-			//raw_pointer_cast(d_result_lb_sorted.data()),
-			raw_pointer_cast(d_result_temp.data()),
-			raw_pointer_cast(query_result_count.data()),
-			raw_pointer_cast(d_valid_query.data()), topKValue
-			);
-	int terminate_sum = thrust::reduce(d_valid_query.begin(),
-			d_valid_query.end());
-
-
-	cudaEventRecord(stop, 0);
-	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&elapsedTime, start, stop);
-	exec_time[4] += elapsedTime;
+//
+//	//cout
+//	//		<< "GPUManager::bi_direction_query(): 4 -- terminate_check_KernelPerQuery()"
+//	//		<< endl;
+//	device_vector<Result> d_result_temp(d_result_ub_sorted.size());//create temp buffer for checking
+//	cudaEventRecord(start, 0);
+//
+//
+//	terminateCheck_kSelection_KernelPerQuery<<<this->invert_list_spec_host.numOfQuery,	THREAD_PER_BLK>>>(
+//			raw_pointer_cast(d_result_ub_sorted.data()),
+//			//raw_pointer_cast(d_result_lb_sorted.data()),
+//			raw_pointer_cast(d_result_temp.data()),
+//			raw_pointer_cast(query_result_count.data()),
+//			raw_pointer_cast(d_valid_query.data()), topKValue
+//			);
+//	int terminate_sum = thrust::reduce(d_valid_query.begin(),
+//			d_valid_query.end());
+//
+//
+//	cudaEventRecord(stop, 0);
+//	cudaEventSynchronize(stop);
+//	cudaEventElapsedTime(&elapsedTime, start, stop);
+//	exec_time[4] += elapsedTime;
 	//=====================Old impl=================================
 
 
 	//=============================== Yiwei's Bucket Impl ========================
 	//cout << "GPUManager::bi_direction_query(): 4 -- terminate_check_KernelPerQuery_Bucket()" << endl;
 	int number_of_parts = this->invert_list_spec_host.numOfQuery;
-	device_vector<int> d_valid_query2(d_valid_query.size());
 	cudaEventRecord(start, 0);
 	terminateCheck_kSelection_KernelPerQuery_Bucket(
-			&d_result_ub_sorted_2,
+			&d_result_ub_sorted,
 			&query_result_count,
 			number_of_parts,
 			topKValue,
-			raw_pointer_cast(d_valid_query2.data()));
-	//int terminate_sum = thrust::reduce(d_valid_query.begin(), d_valid_query.end());
+			raw_pointer_cast(d_valid_query.data()));
+	int terminate_sum = thrust::reduce(d_valid_query.begin(), d_valid_query.end());
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&elapsedTime, start, stop);
-	host_vector<int> h_valid_query = d_valid_query, h_valid_query2 = d_valid_query2;
-	host_vector<Result> h_result_ub_sorted = d_result_ub_sorted, h_result_ub_sorted_2 = d_result_ub_sorted_2;
-	int flag = 1;
-	for(int i=0; i<h_valid_query.size(); i++){
-		if(h_valid_query2[i] != h_valid_query[i]){
-			flag = 0;
-			break;
-		}
-	}
-	printf("Am I right? %d\n", flag);
-	if(!flag)
-	{
-		for(int i=0; i<number_of_parts; i++)
-		{
-			int start = (i==0) ? 0 : query_result_count[i-1];
-			if(h_valid_query2[i] != h_valid_query[i])
-			{
-				cout << "output error caught at part " << i << " right " << h_valid_query[i] << " my " << h_valid_query2[i] << endl;
-				for(int j=start; j<=start+topKValue; j++)
-				{
-					cout << "part " <<  i << " index " << j-start
-						<< " rightub " << h_result_ub_sorted[j].ub
-						<< " rightlb " << h_result_ub_sorted[j].lb
-						<< " myub " << h_result_ub_sorted_2[j].ub
-						<< " mylb " << h_result_ub_sorted_2[j].lb <<endl;
-				}
-			}
-		}
-	}
 	exec_time[4] += elapsedTime;
 	//=============================== Yiwei's Bucket Impl ========================
 
