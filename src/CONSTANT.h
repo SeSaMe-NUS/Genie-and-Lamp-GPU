@@ -10,6 +10,6 @@
 
 #define TOPK 32
 #define DIMENSIONNUM 8
-#define QUERYNUM 2
+#define QUERYNUM 64
 
 #endif /* CONSTANT_H_ */

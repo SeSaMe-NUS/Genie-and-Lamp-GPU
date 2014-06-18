@@ -434,6 +434,7 @@ bool GPUManager::bi_direction_query_KernelPerDim (int threshold, int topKValue, 
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&elapsedTime, start, stop);
 	host_vector<int> h_valid_query = d_valid_query, h_valid_query2 = d_valid_query2;
+	host_vector<Result> h_result_ub_sorted = d_result_ub_sorted, h_result_ub_sorted_2 = d_result_ub_sorted_2;
 	int flag = 1;
 	for(int i=0; i<h_valid_query.size(); i++){
 		if(h_valid_query2[i] != h_valid_query[i]){
@@ -444,9 +445,21 @@ bool GPUManager::bi_direction_query_KernelPerDim (int threshold, int topKValue, 
 	printf("Am I right? %d\n", flag);
 	if(!flag)
 	{
-		for(int i=0; i<h_valid_query.size(); i++)
+		for(int i=0; i<number_of_parts; i++)
 		{
-			printf("right = %d, me = %d\n", h_valid_query[i], h_valid_query2[i]);
+			int start = (i==0) ? 0 : query_result_count[i-1];
+			if(h_valid_query2[i] != h_valid_query[i])
+			{
+				cout << "output error caught at part " << i << " right " << h_valid_query[i] << " my " << h_valid_query2[i] << endl;
+				for(int j=start; j<=start+topKValue; j++)
+				{
+					cout << "part " <<  i << " index " << j-start
+						<< " rightub " << h_result_ub_sorted[j].ub
+						<< " rightlb " << h_result_ub_sorted[j].lb
+						<< " myub " << h_result_ub_sorted_2[j].ub
+						<< " mylb " << h_result_ub_sorted_2[j].lb <<endl;
+				}
+			}
 		}
 	}
 	exec_time[4] += elapsedTime;

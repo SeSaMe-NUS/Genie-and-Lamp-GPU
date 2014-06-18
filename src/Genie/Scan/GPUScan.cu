@@ -73,11 +73,11 @@ void GPUScan::computTopk_int_eu(vector<vector<int> >& query, int k,
 	GPU_computeTopk(query_flt, query_blade_id, bladeData_flt, topk_vec, Eu_Func<float>(), topk_result_idx );
 
 	for(int i=0;i<topk_result_idx.size();i++){
-		cout<<"query item ["<<i<<"]"<<endl;
+		//cout<<"query item ["<<i<<"]"<<endl;
 		for(int j=0;j<topk_result_idx[i].size();j++){
 			//cout<<"query item ["<<i<<"] result "<< j<<":"<<topk_result_idx[i][j].idx<<" dist:"<<topk_result_idx[i][j].dis<<endl;
 		}
-		cout<<endl;
+		//cout<<endl;
 	}
 
 

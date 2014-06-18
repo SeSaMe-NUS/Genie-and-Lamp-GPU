@@ -1005,9 +1005,16 @@ __global__ void terminateCheck_kSelection_KernelPerQuery(
 
 	__syncthreads();
 	if(tid == 0){
-		if(blk_data[K].lb >= blk_data[K-1].ub){
-			output[bid] = 0;
-		}
+//		if(blk_data[K].lb >= blk_data[K-1].ub){
+//			output[bid] = 0;
+//		}
+		output[bid] = 1;
+		int flag = 1;
+		for(int i=0; i<K; i++)
+		  if(blk_data[K].lb < blk_data[i].ub)
+		    flag = 0;
+		if(flag)
+		  output[bid] = 0;
 	}
 
 }
@@ -1124,7 +1131,7 @@ void terminateCheck_kSelection_KernelPerQuery_Bucket(
 	thrust::copy(maxData, maxData+1, d_max.begin());
 	host_vector<Result> h_min = d_min, h_max = d_max;
 	bucket_topk(boundData, selUb, h_min[0].lb, h_max[0].ub, &d_k1, end_idx, number_of_parts);
-	start_index_offset<<<number_of_parts, THREADS_PER_BLOCK>>>(rpc(start_index), rpc(*end_idx), K+1);
+	start_index_offset<<<number_of_parts, THREADS_PER_BLOCK>>>(rpc(start_index), rpc(*end_idx), K);
 	bucket_topk(boundData, selLb, h_min[0].lb, h_max[0].ub, &d_k2, &start_index, end_idx, number_of_parts);
 	output_check<<<number_of_parts, THREADS_PER_BLOCK>>>(rpc(*boundData), rpc(*end_idx), K, output);
 }

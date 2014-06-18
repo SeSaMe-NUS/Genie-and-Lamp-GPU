@@ -6,7 +6,7 @@ static __global__ void default_start_index(int* start_index, int* end_index)
 	int bid = blockIdx.x;
 	start_index[bid] = (bid==0) ? 0 : end_index[bid-1];
 }
-//note:GetValue sel.valueOf(data[index]); define interface for which value to be selected
+
 template<typename Data, typename GetValue>
 __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, float MIN, float MAX, device_vector<int> *d_k, device_vector<int> *d_start_index, device_vector<int> *d_end_index, int number_of_parts, device_vector<int> *d_result)
 {
@@ -122,7 +122,7 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, float MIN, 
 	device_vector<int> d_result_end_index(number_of_parts);
 	inclusive_scan((*d_k).begin(), (*d_k).end(), d_result_end_index.begin());
 	bucket_topk(d_data, sel, MIN, MAX, d_k, d_start_index, d_end_index, number_of_parts, &d_result);
-	shift_result<<<number_of_parts, THREADS_PER_BLOCK>>>
+	shift_result_for<<<number_of_parts, THREADS_PER_BLOCK>>>
 			(rpc(*d_data), rpc(*d_start_index), rpc(d_result), rpc(d_result_end_index));
 }
 

@@ -137,18 +137,47 @@ static __global__ void shift_result(Data* data, int* start_index, int* result, i
 	int result_start = (bid==0) ? 0 : end_index_of_result[bid-1];
 	int result_end = end_index_of_result[bid];
 
-	Data newData, oldData;
+	Data newDatak, oldDatak;
 
 	if(tid+result_start < result_end)
 	{
-		newData = data[result[tid+result_start]];
-		oldData = data[tid+start];
+		newDatak = data[result[tid+result_start]];
+		oldDatak = data[tid+start];
 	}
 	__syncthreads();
 	if(tid+result_start < result_end)
 	{
-		data[result[tid+result_start]] = oldData;
-		data[tid+start] = newData;
+		data[result[tid+result_start]] = oldDatak;
+		data[tid+start] = newDatak;
+	}
+}
+
+template<typename Data>
+static __global__ void shift_result_for(Data* data, int* start_index, int* result, int* end_index_of_result)
+{
+	int bid = blockIdx.x;
+	int tid = threadIdx.x;
+	int start = start_index[bid];
+	int result_start = (bid==0) ? 0 : end_index_of_result[bid-1];
+	int result_end = end_index_of_result[bid];
+
+	if(tid==0)
+	{
+		for(int i=result_end-1; i>=result_start; i--)
+			for(int j=result_start; j<i; j++)
+				if(result[j] >  result[j+1])
+				{
+					int temp = result[j];
+					result[j] = result[j+1];
+					result[j+1] = temp;
+				}
+		Data t;
+		for(int i=result_start; i<result_end; i++)
+		{
+			t = data[i-result_start+start];
+			data[i-result_start+start] = data[result[i]];
+			data[result[i]] = t;
+		}
 	}
 }
 
