@@ -1,0 +1,5 @@
+#include "CONSTANT.h"
+
+int TOPK=128;
+int DIMENSIONNUM=256;
+int QUERYNUM=64;

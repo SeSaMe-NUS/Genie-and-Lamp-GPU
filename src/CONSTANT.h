@@ -8,8 +8,8 @@
 #ifndef CONSTANT_H_
 #define CONSTANT_H_
 
-#define TOPK 128
-#define DIMENSIONNUM 256
-#define QUERYNUM 64
+extern int TOPK;
+extern int DIMENSIONNUM;
+extern int QUERYNUM;
 
 #endif /* CONSTANT_H_ */

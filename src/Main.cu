@@ -9,6 +9,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <iostream>
 
 
@@ -16,6 +17,7 @@
 #include "AppManager/deviceDetector/deviceDetector.h"
 #include "Genie/WrapperGPUKNN.h"
 #include "Genie/WrapperScan.h"
+#include "CONSTANT.h"
 #include <vector>
 using namespace std;
 
@@ -25,10 +27,17 @@ using namespace thrust;
 /**
  * Host function that prepares data array and passes it to the CUDA kernel.
  */
-int main(void) {
-
-
-
+int main(int argc, char* argv[]) {
+	for(int i=1; i<argc; i++)
+	{
+		if((strcmp(argv[i], "--topk")==0 || strcmp(argv[i], "-k")==0) && argv[i+1]!=NULL)
+			sscanf(argv[i+1], "%d", &TOPK);
+		if(strcmp(argv[i], "--dimension")==0 || strcmp(argv[i], "-d")==0)
+			sscanf(argv[i+1], "%d", &DIMENSIONNUM);
+		if(strcmp(argv[i], "--query")==0 || strcmp(argv[i], "-q")==0)
+			sscanf(argv[i+1], "%d", &QUERYNUM);
+	}
+	cout << "TOPK = " << TOPK << ", DIMENSIONNUM = " << DIMENSIONNUM << ", QUERYNUM = " << QUERYNUM << endl;
 	WrapperIndexBuilder wrapperIndexBuilder;
 	wrapperIndexBuilder.runBuilderIndex();
 
