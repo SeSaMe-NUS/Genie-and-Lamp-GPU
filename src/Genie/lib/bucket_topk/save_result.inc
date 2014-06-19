@@ -165,7 +165,7 @@ static __global__ void shift_result_for(Data* data, int* start_index, int* resul
 	{
 		for(int i=result_end-1; i>=result_start; i--)
 			for(int j=result_start; j<i; j++)
-				if(result[j] >  result[j+1])
+				if(result[j] >  result[j+1] || result[j]==-1)
 				{
 					int temp = result[j];
 					result[j] = result[j+1];
@@ -174,9 +174,12 @@ static __global__ void shift_result_for(Data* data, int* start_index, int* resul
 		Data t;
 		for(int i=result_start; i<result_end; i++)
 		{
-			t = data[i-result_start+start];
-			data[i-result_start+start] = data[result[i]];
-			data[result[i]] = t;
+			if(result[i]!=-1)
+			{
+				t = data[i-result_start+start];
+				data[i-result_start+start] = data[result[i]];
+				data[result[i]] = t;
+			}
 		}
 	}
 }

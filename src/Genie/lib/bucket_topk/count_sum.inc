@@ -61,7 +61,6 @@ static __global__ void check_index(int* k, int* bucket_size_sum, int number_of_b
 			{
 				last_bucket_index[bid] = blk_end_index;
 				miss[bid] = 0;
-				printf("This is going to be tested!!!!!!!!!!");
 			}
 		}
 	}
