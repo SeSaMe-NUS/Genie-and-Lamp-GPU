@@ -21,6 +21,7 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vect
 	int number_of_buckets = 2000 < size/2 ? 2000 : size/2+1;
 
 	(*d_result).resize(result_size);
+	thrust::fill((*d_result).begin(), (*d_result).end(), -1);
 	//========================================================================================================================
 
 	//First Round
@@ -107,12 +108,28 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vect
 	}
 }
 
+/* CONSTANT MIN MAX */
+template<typename Data, typename GetValue>
+__host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, float MIN, float MAX, device_vector<int> *d_k, device_vector<int> *d_start_index, device_vector<int> *d_end_index, int number_of_parts, device_vector<int> *d_result)
+{
+	device_vector<float> d_min(number_of_parts, MIN), d_max(number_of_parts, MAX);
+	bucket_topk(d_data, sel, &d_min, &d_max, d_k, d_start_index, d_end_index, number_of_parts, d_result);
+}
+
 template<typename Data, typename GetValue>
 __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vector<float> *d_min, device_vector<float> *d_max, device_vector<int> *d_k, device_vector<int> *d_end_index, int number_of_parts, device_vector<int> *d_result)
 {
 	device_vector<int> d_start_index(number_of_parts);
 	default_start_index<<<number_of_parts, THREADS_PER_BLOCK>>>(rpc(d_start_index), rpc(*d_end_index));
 	bucket_topk(d_data, sel, d_min, d_max, d_k, &d_start_index, d_end_index, number_of_parts, d_result);
+}
+
+/* CONSTANT MIN MAX */
+template<typename Data, typename GetValue>
+__host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, float MIN, float MAX, device_vector<int> *d_k, device_vector<int> *d_end_index, int number_of_parts, device_vector<int> *d_result)
+{
+	device_vector<float> d_min(number_of_parts, MIN), d_max(number_of_parts, MAX);
+	bucket_topk(d_data, sel, &d_min, &d_max, d_k, d_end_index, number_of_parts, d_result);
 }
 
 template<typename Data, typename GetValue>
@@ -126,11 +143,28 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vect
 			(rpc(*d_data), rpc(*d_start_index), rpc(d_result), rpc(d_result_end_index));
 }
 
+/* CONSTANT MIN MAX */
+template<typename Data, typename GetValue>
+__host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, float MIN, float MAX, device_vector<int> *d_k, device_vector<int> *d_start_index, device_vector<int> *d_end_index, int number_of_parts)
+{
+	device_vector<float> d_min(number_of_parts, MIN), d_max(number_of_parts, MAX);
+	bucket_topk(d_data, sel, &d_min, &d_max, d_k, d_start_index, d_end_index, number_of_parts);
+}
+
 template<typename Data, typename GetValue>
 __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vector<float> *d_min, device_vector<float> *d_max, device_vector<int> *d_k, device_vector<int> *d_end_index, int number_of_parts)
 {
 	device_vector<int> d_start_index(number_of_parts);
 	default_start_index<<<number_of_parts, THREADS_PER_BLOCK>>>(rpc(d_start_index), rpc(*d_end_index));
-	bucket_topk(d_data, sel, d_min, d_min, d_k, &d_start_index, d_end_index, number_of_parts);
+	bucket_topk(d_data, sel, d_min, d_max, d_k, &d_start_index, d_end_index, number_of_parts);
+}
+
+
+/* CONSTANT MIN MAX */
+template<typename Data, typename GetValue>
+__host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, float MIN, float MAX, device_vector<int> *d_k, device_vector<int> *d_end_index, int number_of_parts)
+{
+	device_vector<float> d_min(number_of_parts, MIN), d_max(number_of_parts, MAX);
+	bucket_topk(d_data, sel, &d_min, &d_max, d_k, d_end_index, number_of_parts);
 }
 #endif
