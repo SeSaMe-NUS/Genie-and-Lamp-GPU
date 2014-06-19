@@ -2,12 +2,12 @@
 #define ASSIGN_BUCKET_
 
 template<typename Data, typename GetValue>
-static __global__ void assign_bucket(Data* data, GetValue sel, Bucket* bucket, int* start_index, int* end_index, int* bucket_size, float min, float max, int number_of_buckets);
+static __global__ void assign_bucket(Data* data, GetValue sel, Bucket* bucket, int* start_index, int* end_index, int* bucket_size, float* min, float* max, int number_of_buckets);
 template<typename Data, typename GetValue>
 static __global__ void reassign_bucket(Data* data, GetValue sel, int* data_index, Bucket* bucket, int* end_index, int* bucket_size, float* min, float* max, int number_of_buckets);
 
 template<typename Data, typename GetValue>
-static __global__ void assign_bucket(Data* data, GetValue sel, Bucket* bucket, int* start_index, int* end_index, int* bucket_size, float min, float max, int number_of_buckets)
+static __global__ void assign_bucket(Data* data, GetValue sel, Bucket* bucket, int* start_index, int* end_index, int* bucket_size, float* min, float* max, int number_of_buckets)
 {
 	int bid = blockIdx.x;
 	int tid = threadIdx.x;
@@ -25,9 +25,9 @@ static __global__ void assign_bucket(Data* data, GetValue sel, Bucket* bucket, i
         if(index < blk_end_index)
         {
         	float value = sel.valueOf(data[index]);
-        	if(value > max) value = max;
-        	if(value < min) value = min;
-            bucket_index = (value - min) * number_of_buckets / (max-min);
+        	if(value > max[bid]) value = max[bid];
+        	if(value < min[bid]) value = min[bid];
+            bucket_index = (value - min[bid]) * number_of_buckets / (max[bid]-min[bid]);
             if(bucket_index == number_of_buckets)
             {
                 bucket_index = number_of_buckets - 1;

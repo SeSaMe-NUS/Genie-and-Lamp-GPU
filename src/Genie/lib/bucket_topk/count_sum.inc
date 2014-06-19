@@ -52,13 +52,16 @@ static __global__ void check_index(int* k, int* bucket_size_sum, int number_of_b
 					miss[bid] = k[bid];
 				}
 			}
-			else
+			else if(bucket_size_sum[index] - size_before > k[bid] && bucket_size_sum[index-1] - size_before <= k[bid])
 			{
-				if(bucket_size_sum[index] - size_before > k[bid] && bucket_size_sum[index-1] - size_before <= k[bid])
-				{
 					last_bucket_index[bid] = index;
 					miss[bid] = k[bid] - (bucket_size_sum[index-1]- size_before);
-				}
+			}
+			else if(index == blk_end_index-1 && bucket_size_sum[index] - size_before <= k[bid])
+			{
+				last_bucket_index[bid] = blk_end_index;
+				miss[bid] = 0;
+				printf("This is going to be tested!!!!!!!!!!");
 			}
 		}
 	}
