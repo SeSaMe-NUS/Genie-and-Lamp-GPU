@@ -37,11 +37,11 @@ for arg in cases do
   result = `#{runner}`
   gpu_time =  /finished\s+with\s+total\s+time\s+\:\s+\d+\.\d+\s+with\s+\d+\s+iterations/.match(result) || /finished\s+with\s+total\s+time\s+\:\s+\d+\s+with\s+\d+\s+iterations/.match(result)
   cpu_scan_time = /the\s+time\s+of\s+top\-\d+\s+in\s+CPU\s+version\s+is\:\d+\.\d+/.match(result) || /the\s+time\s+of\s+top\-\d+\s+in\s+CPU\s+version\s+is\:\d+/.match(result)
-  gpu_scan_time = ""
+  gpu_scan_time = /GPU\s+SCAN\s+Time\s+used\:\s+\d+.\d+/.match(result) || /GPU\s+SCAN\s+Time\s+used\:\s+\d+/.match(result)
   puts "TOPK = #{arg[0]} DIMENSIONNUM = #{arg[1]} QUERYNUM = #{arg[2]}"
   puts "GPU     : " + gpu_time[0]
   puts "CPU_SCAN: " + cpu_scan_time[0]
-  puts "GPU_SCAN: " + gpu_scan_time
+  puts "GPU_SCAN: " + gpu_scan_time[0]
 
   puts
 end
