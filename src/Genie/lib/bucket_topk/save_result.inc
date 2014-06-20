@@ -1,6 +1,8 @@
 #ifndef SAVE_RESULT_INC_
 #define SAVE_RESULT_INC_
 
+#include <limits.h>
+
 static __global__ void save_result(Bucket* bucket, int* stat_index, int* end_index, int* last_bucket_index, int* thread_start_index, int* thread_end_index, int* result)
 {
 	int bid = blockIdx.x;
@@ -152,25 +154,24 @@ static __global__ void shift_result(Data* data, int* start_index, int* result, i
 	}
 }
 
-template<typename Data>
-static __global__ void shift_result_for(Data* data, int* start_index, int* result, int* end_index_of_result)
+struct Bucket_Topk_ValueOfInt {
+	__device__ float valueOf(int data)
+	{
+		return data==-1 ? INT_MAX : data;
+	}
+};
+template<typename Data, typename GetValue>
+static __global__ void shift_result_for(Data* data, int* start_index, int* result, GetValue bucket_topk_valofInt, int* end_index_of_result)
 {
 	int bid = blockIdx.x;
 	int tid = threadIdx.x;
 	int start = start_index[bid];
 	int result_start = (bid==0) ? 0 : end_index_of_result[bid-1];
 	int result_end = end_index_of_result[bid];
-
+	extern __shared__ int result_tmp[];
+	blk_sort_inSharedMemory(result+result_start, result_tmp, bucket_topk_valofInt, result_end-result_start);
 	if(tid==0)
 	{
-		for(int i=result_end-1; i>=result_start; i--)
-			for(int j=result_start; j<i; j++)
-				if(result[j] >  result[j+1] || result[j]==-1)
-				{
-					int temp = result[j];
-					result[j] = result[j+1];
-					result[j+1] = temp;
-				}
 		Data t;
 		for(int i=result_start; i<result_end; i++)
 		{

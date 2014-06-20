@@ -139,8 +139,8 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vect
 	device_vector<int> d_result_end_index(number_of_parts);
 	inclusive_scan((*d_k).begin(), (*d_k).end(), d_result_end_index.begin());
 	bucket_topk(d_data, sel, d_min, d_max, d_k, d_start_index, d_end_index, number_of_parts, &d_result);
-	shift_result_for<<<number_of_parts, THREADS_PER_BLOCK>>>
-			(rpc(*d_data), rpc(*d_start_index), rpc(d_result), rpc(d_result_end_index));
+	shift_result_for<<<number_of_parts, THREADS_PER_BLOCK, BUCKET_TOPK_MAX_K*sizeof(int)>>>
+			(rpc(*d_data), rpc(*d_start_index), rpc(d_result), Bucket_Topk_ValueOfInt(), rpc(d_result_end_index));
 }
 
 /* CONSTANT MIN MAX */

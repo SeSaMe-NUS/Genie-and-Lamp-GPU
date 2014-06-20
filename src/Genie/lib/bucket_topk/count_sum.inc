@@ -7,7 +7,7 @@
 using namespace thrust;
 
 static void count_sum(device_vector<int> *k, device_vector<int> *d_bucket_size, int number_of_parts, int number_of_buckets, device_vector<int> *last_bucket_index, device_vector<int> *miss, device_vector<int> *end_index_of_each_part);
-static __global__ void copy_size(int* last_bucket_index, int* bucket_size, int* new_partition_size);
+static __global__ void copy_size(int* last_bucket_index, int* bucket_size, int number_of_buckets, int* new_partition_size);
 static __global__ void check_index(int* k, int* bucket_size_sum, int number_of_buckets, int* last_bucket_index, int* miss);
 
 static void count_sum(device_vector<int> *k, device_vector<int> *d_bucket_size, int number_of_parts, int number_of_buckets, device_vector<int> *last_bucket_index, device_vector<int> *miss, device_vector<int> *end_index_of_each_part)
@@ -21,7 +21,7 @@ static void count_sum(device_vector<int> *k, device_vector<int> *d_bucket_size, 
 			raw_pointer_cast((*last_bucket_index).data()),
 			raw_pointer_cast((*miss).data()));
 
-	copy_size<<<number_of_parts, 1>>>(raw_pointer_cast((*last_bucket_index).data()), raw_pointer_cast((*d_bucket_size).data()), raw_pointer_cast((*end_index_of_each_part).data()));
+	copy_size<<<number_of_parts, 1>>>(raw_pointer_cast((*last_bucket_index).data()), raw_pointer_cast((*d_bucket_size).data()), number_of_buckets, raw_pointer_cast((*end_index_of_each_part).data()));
 	inclusive_scan((*end_index_of_each_part).begin(), (*end_index_of_each_part).end(), (*end_index_of_each_part).begin());
 }
 
@@ -66,9 +66,13 @@ static __global__ void check_index(int* k, int* bucket_size_sum, int number_of_b
 	}
 }
 
-static __global__ void copy_size(int* last_bucket_index, int* bucket_size, int* new_partition_size)
+static __global__ void copy_size(int* last_bucket_index, int* bucket_size, int number_of_buckets, int* new_partition_size)
 {
 	int bid = blockIdx.x;
-	new_partition_size[bid] = bucket_size[last_bucket_index[bid]];
+	int last = (bid+1)*number_of_buckets;
+	if(last_bucket_index[bid] < last)
+		new_partition_size[bid] = bucket_size[last_bucket_index[bid]];
+	else
+		new_partition_size[bid] = 0;
 }
 #endif
