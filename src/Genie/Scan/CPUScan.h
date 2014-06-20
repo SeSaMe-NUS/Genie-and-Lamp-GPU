@@ -18,7 +18,12 @@ using namespace std;
 #include "UtlScan.h"
 #include "DistFunc.h"
 
-
+struct CompareTopNode {
+    bool operator()(const topNode& x, const topNode& y) const
+    {
+        return x.dis < y.dis;
+    }
+};
 
 class CPUScan {
 public:
@@ -77,20 +82,21 @@ public:
 
 
 	 			//compute the max value in this array
-	 			double maxd=-1; int idx=-1;
-	 			for(int r=0;r<k;r++){
-	 				if(res[r].dis >= maxd){
-
-	 					maxd=res[r].dis;
-	 					idx=r;
-
-	 				}
-	 			}
+	 			double maxd=res[0].dis; int idx=0;
+//	 			for(int r=0;r<k;r++){
+//	 				if(res[r].dis >= maxd){
+//
+//	 					maxd=res[r].dis;
+//	 					idx=r;
+//
+//	 				}
+//	 			}
 
 	 			//if smaller than maxd, replace
 	 			if(di<=maxd){
 	 				res[idx].dis = di; //_dist[idx]=di;
 	 				res[idx].idx = i; ////_index[idx]=i;
+	 				make_heap (res.begin(), res.end(), CompareTopNode());
 	 			}
 	 		}
 
