@@ -27,25 +27,14 @@ public:
 
 	//====
 	int runCPUEu();
-	int runCpuDtw_scBand();
-
 	int runGPUEu();
+
+	int runCpu_Dtw_scBand();
+	int runGpu_Dtw_scBand();
+
 
 };
 
-/*
- *
- *
- * private:
-	int* vec2data(std::vector<int> data);
-	int runDTWQueryInt(std::string inputFilename, std::string queryFile,int columnAv, int dim, int tq_num, int k);
-	int runDTWQueryByInput();
 
-public:
-	int runGPUDTW();
- * void DTWQuery(vector<int>& data, vector<vector<int> >& qdata, int dim, int topk,
-			vector<vector<int> >& _resIdx, vector<vector<int> >& _dist);
- *
- */
 
 #endif /* WRAPPERSCAN_H_ */

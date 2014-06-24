@@ -21,20 +21,24 @@
 //public:
 //	__host__ __device__ DistFunc();
 //	__host__ __device__ virtual ~DistFunc();
-template<class T>
-__host__ __device__ T dtw(const T* Q, uint sq, const T* C, uint sc, uint cq_len);
-
-template<class T>
-__host__ __device__ T dtw_SCBand(const T* Q, uint sq, const T* C, uint sc, uint cq_len, uint r);
 
 template<class T>
 __host__ __device__ T eu(const T* Q, uint sq,const T* C, uint sc, uint cq_len);
 
-template<class T>
-__host__ __device__ T dtw_compressDP(const T* Q, uint q_len, const T*C, uint c_len);
+template <class T>
+__host__ __device__ T dtw_DP_SCBand_modulus(const T* Q, uint q_len,const T* C, uint c_len, uint r);
 
 template<class T>
-__host__ __device__ T dtw_DP_SCBand(const T* Q, uint q_len, const T* C, uint c_len, uint r);
+__host__ __device__ T dtw(const T* Q, uint sq, const T* C, uint sc, uint cq_len);
+
+template<class T>
+__host__ __device__ T depressed_dtw_SCBand(const T* Q, uint sq, const T* C, uint sc, uint cq_len, uint r);
+
+template <class T>//this is auxiliary function of depressed_dtw_SCBand();
+__host__ __device__ T depressed_dtw_DP_SCBand(const T* Q, uint q_len,const T* C, uint c_len, uint r);
+
+template<class T>
+__host__ __device__ T dtw_compressDP(const T* Q, uint q_len, const T*C, uint c_len);
 
 template<class T>
 __host__ __device__ T dtw_recur(const T*Q, uint q_len, const T* C, uint c_len);
@@ -49,10 +53,19 @@ template<class T>
 __host__ __device__ T dtw_AuxRecur_SCBand(const T* Q, uint qi, const T* C, uint cj, uint r);
 //};
 
+//for LB_Keogh
+template<class T>
+__host__ __device__ T LowerBound_keogh_byQ(const T* Q, int sq, const T* C, int sc, int cq_len, int sc_band);
+
 
 
 template <class T>
 struct Eu_Func{
+
+
+	__host__ __device__ Eu_Func(){
+
+	}
 
 	__host__ __device__ T dist ( const T* Q, uint sq, const T* C, uint sc, uint cq_len){
 
@@ -65,17 +78,58 @@ struct Eu_Func{
 
 };
 
+//this function can only run in CPU and cannot work for large scale GPU, but the program is corrected.
+//we keep this function for experiment and debug purpose
 template <class T>
-struct Dtw_SCBand_Func{
+struct depressed_Dtw_SCBand_Func_old{
 
 	uint sc_band;
 
-	__host__ __device__ Dtw_SCBand_Func(uint sc_band){
+	__host__ __device__ depressed_Dtw_SCBand_Func_old(uint sc_band){
 		this->sc_band = sc_band;
 	}
 
 	__host__ __device__ T dist ( const T* Q, uint sq, const T* C, uint sc, uint cq_len){
-		return dtw_SCBand( Q, sq,  C,  sc, cq_len, sc_band);
+		return depressed_dtw_SCBand( Q, sq,  C,  sc, cq_len, sc_band);
+	}
+};
+
+template <class T>
+struct Dtw_SCBand_Func_modulus{
+
+	uint sc_band;
+
+	__host__ __device__ Dtw_SCBand_Func_modulus(uint sc_band){
+		this->sc_band = sc_band;
+	}
+
+	__host__ __device__ T dist ( const T* Q, uint sq, const T* C, uint sc, uint cq_len){
+		return dtw_DP_SCBand_modulus( Q+sq, cq_len,C+sc, cq_len, sc_band);
+	}
+
+};
+
+
+
+template<class T>
+struct Dtw_SCBand_LBKeogh {
+	int sc_band;
+
+	__host__ __device__ Dtw_SCBand_LBKeogh(uint sc_band) {
+		this->sc_band = sc_band;
+	}
+	__host__ __device__ T LowerBound_keogh_byQuery(const T* Q, int sq,
+			const T* C, int sc, int cq_len) {
+
+		return LowerBound_keogh_byQ(Q, sq, C, sc, cq_len, sc_band);
+
+	}
+
+	__host__ __device__ T LowerBound_keogh_byData(const T* Q, int sq,
+			const T* C, int sc, int cq_len) {
+
+		return LowerBound_keogh_byQ(C, sc, Q, sq, cq_len, sc_band);
+
 	}
 };
 

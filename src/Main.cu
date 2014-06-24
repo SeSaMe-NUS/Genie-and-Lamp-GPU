@@ -52,10 +52,12 @@ int main(int argc, char* argv[]) {
 	cout<<endl;
 	cout<<"run CPU Scan ==================="<<endl;
 	wscan.runCPUEu();
+	//wscan.runCpu_Dtw_scBand();
 
 	cout<<endl;
 	cout<<"run GPU Scan ==================="<<endl;
 	wscan.runGPUEu();
+	//wscan.runGpu_Dtw_scBand();
 
 
 

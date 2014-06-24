@@ -114,13 +114,6 @@ void GPUScan::computTopk_int_dtw_scBand(vector<vector<int> >& query, int k,
 
 		vector<int> topk_vec(query.size(),k);
 
-		//host_vector<int> h_data(data);
-		//device_vector<int> d_data = h_data;
-		//int min, max;
-		//getMinMax(d_data, min,max);
-
-		int min = 0;
-		int max = 64800;
 
 		vector<vector<float> > query_flt;
 		vector<vector<float> > bladeData_flt;
@@ -130,15 +123,15 @@ void GPUScan::computTopk_int_dtw_scBand(vector<vector<int> >& query, int k,
 		struct timeval end;
 
 		gettimeofday(&start, NULL);
-		GPU_computeTopk(query_flt, query_blade_id, bladeData_flt, topk_vec, Dtw_SCBand_Func<float>(sc_band),topk_result_idx);
+		GPU_computeTopk(query_flt, query_blade_id, bladeData_flt, topk_vec, Dtw_SCBand_Func_modulus<float>(sc_band),topk_result_idx);
 		gettimeofday(&end, NULL);
 		float delta_time = (end.tv_sec* 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
 		cout << "GPU SCAN Time used: " << delta_time << endl;
 		for (int i = 0; i < topk_result_idx.size(); i++) {
-		cout << "query item [" << i << "]" << endl;
+		//cout << "query item [" << i << "]" << endl;
 		for (int j = 0; j < topk_result_idx[i].size(); j++) {
-			cout<<"query item ["<<i<<"] result "<< j<<":"<<topk_result_idx[i][j].idx<<" dist:"<<topk_result_idx[i][j].dis<<endl;
+			//cout<<"query item ["<<i<<"] result "<< j<<":"<<topk_result_idx[i][j].idx<<" dist:"<<topk_result_idx[i][j].dis<<endl;
 		}
-		cout << endl;
+		//cout << endl;
 	}
 }
