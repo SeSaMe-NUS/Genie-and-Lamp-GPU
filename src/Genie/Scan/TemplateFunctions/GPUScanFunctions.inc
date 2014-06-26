@@ -19,7 +19,7 @@ using namespace std;
 using namespace thrust;
 #define THREAD_PER_BLK 256 // must be greater or equal to MAX_DIM and not exceed 1024
 
-
+#define BUCKTOPK_SPLIT_THRESHOLD 512000000
 
 
 /*
@@ -118,6 +118,16 @@ void inline getMinMax(device_vector<float>& d_data_vec, float & min, float& max)
  }
 
 
+
+void inline splitDeviceVector(device_vector<int>& master, device_vector<int>& first, device_vector<int>& second){
+
+	first.resize(master.size()/2);
+	second.resize(master.size()/2+master.size()%2);
+
+	thrust::copy(master.begin(),master.begin()+master.size()/2,first.begin());
+	thrust::copy(master.begin()+master.size()/2,master.end(),second.begin());
+
+}
 
 /**
  * TODO:
@@ -223,7 +233,9 @@ void inline getMinMax(device_vector<float>& d_data_vec, float & min, float& max)
   	device_vector<int> d_topk_distComp_vec(topkSum);
 
 
+	cout<<"d_distComp_vec size: "<<d_distComp_vec.size()<<" memory:"<<d_distComp_vec.size()*sizeof(d_distComp_vec[0])<<endl;
 
+  	if(d_distComp_vec.size() < BUCKTOPK_SPLIT_THRESHOLD){
   	bucket_topk(&d_distComp_vec,
   			ValueOfSeletion<float>(), &min_vec, &max_vec,
   			&d_topk_vec,
@@ -231,6 +243,40 @@ void inline getMinMax(device_vector<float>& d_data_vec, float & min, float& max)
   			query_vec.size(),
   			&d_topk_distComp_idSet);
 
+  	}else{
+  		device_vector<int> d_topk_vec_first(d_topk_vec.size()/2);
+  		device_vector<int> d_topk_vec_second(d_topk_vec.size()/2);
+  		splitDeviceVector(d_topk_vec, d_topk_vec_first, d_topk_vec_second);
+
+
+  		device_vector<int> d_distComp_vec_startIdx_first(d_distComp_vec_startIdx.size()/2);
+  		device_vector<int> d_distComp_vec_startIdx_second(d_distComp_vec_startIdx.size()/2);
+  		splitDeviceVector(d_distComp_vec_startIdx, d_distComp_vec_startIdx_first, d_distComp_vec_startIdx_second);
+
+  		device_vector<int> d_distComp_vec_endIdx_first(d_distComp_vec_endIdx.size()/2);
+  		device_vector<int> d_distComp_vec_endIdx_second(d_distComp_vec_endIdx.size()/2);
+  		splitDeviceVector(d_distComp_vec_endIdx, d_distComp_vec_endIdx_first, d_distComp_vec_endIdx_second);
+
+  		device_vector<int> d_topk_distComp_idSet_first;
+  		device_vector<int> d_topk_distComp_idSet_second;
+  		bucket_topk(&d_distComp_vec,
+  		  			ValueOfSeletion<float>(), &min_vec, &max_vec,
+  		  			&d_topk_vec_first,
+  		  			&d_distComp_vec_startIdx_first, &d_distComp_vec_endIdx_first,
+  		  			d_topk_vec_first.size(),
+  		  			&d_topk_distComp_idSet_first);
+
+  		bucket_topk(&d_distComp_vec,
+  		  		  	ValueOfSeletion<float>(), &min_vec, &max_vec,
+  		  		  	&d_topk_vec_second,
+  		  		  	&d_distComp_vec_startIdx_second, &d_distComp_vec_endIdx_second,
+  		  		  	d_topk_vec_second.size(),
+  		  		  	&d_topk_distComp_idSet_second);
+
+  		d_topk_distComp_idSet.resize(d_topk_distComp_idSet_first.size()+d_topk_distComp_idSet_second.size());
+  		thrust::copy(d_topk_distComp_idSet_first.begin(),d_topk_distComp_idSet_first.end(),d_topk_distComp_idSet.begin());
+  		thrust::copy(d_topk_distComp_idSet_second.begin(),d_topk_distComp_idSet_second.end(),d_topk_distComp_idSet.begin()+d_topk_distComp_idSet_first.size());
+  	}
 
 
 	thrust::copy(thrust::make_permutation_iterator(d_distComp_vec.begin(),d_topk_distComp_idSet.begin()),

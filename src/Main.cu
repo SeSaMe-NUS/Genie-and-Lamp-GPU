@@ -44,22 +44,20 @@ int main(int argc, char* argv[]) {
 	WrapperGPUKNN wrapperGpuKnn;
 	cout<<endl;
 	cout<<"run GPU inverted index ==================="<<endl;
-	wrapperGpuKnn.runGPUKNN();
+	//wrapperGpuKnn.runGPUKNN();
 
 
 
 	WrapperScan wscan;
 	cout<<endl;
 	cout<<"run CPU Scan ==================="<<endl;
-	wscan.runCPUEu();
+	//wscan.runCPUEu();
 	//wscan.runCpu_Dtw_scBand();
 
 	cout<<endl;
 	cout<<"run GPU Scan ==================="<<endl;
 	wscan.runGPUEu();
 	//wscan.runGpu_Dtw_scBand();
-
-
 
 	//runDevicDetector();
 

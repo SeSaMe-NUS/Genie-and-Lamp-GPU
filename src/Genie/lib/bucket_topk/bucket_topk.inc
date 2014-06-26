@@ -1,6 +1,9 @@
 #ifndef BUCKET_TOPK_INC_
 #define BUCKET_TOPK_INC_
 
+#include <iostream>
+using namespace std;
+
 static __global__ void default_start_index(int* start_index, int* end_index)
 {
 	int bid = blockIdx.x;
@@ -16,7 +19,9 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vect
 	inclusive_scan((*d_k).begin(), (*d_k).end(), d_result_end_index.begin());
 	exclusive_scan((*d_k).begin(), (*d_k).end(), d_result_last_index.begin());
 
-	const int size = (*d_end_index)[number_of_parts-1];
+	const int size = (*d_end_index)[number_of_parts-1] - (*d_start_index)[0];
+	cout<<"bucket_topk d_bucket size:"<<size<<" mem:"<<size*sizeof(Bucket)<<" d_data size:"<<(*d_data).size()<<" mem:"<<(*d_data).size()*sizeof((*d_data)[0])<<" total mem:"<< size*sizeof(Bucket) +(*d_data).size()*sizeof((*d_data)[0]) <<endl;
+
 	const int result_size = d_result_end_index[number_of_parts-1];
 	int number_of_buckets = 2000 < size/2 ? 2000 : size/2+1;
 
@@ -106,6 +111,7 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vect
 		miss_size = new_miss_size;
 		next_size = new_next_size;
 	}
+
 }
 
 /* CONSTANT MIN MAX */
@@ -115,6 +121,8 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, float MIN, 
 	device_vector<float> d_min(number_of_parts, MIN), d_max(number_of_parts, MAX);
 	bucket_topk(d_data, sel, &d_min, &d_max, d_k, d_start_index, d_end_index, number_of_parts, d_result);
 }
+
+/**********************************************************************************************************/
 
 template<typename Data, typename GetValue>
 __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vector<float> *d_min, device_vector<float> *d_max, device_vector<int> *d_k, device_vector<int> *d_end_index, int number_of_parts, device_vector<int> *d_result)
@@ -131,6 +139,8 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, float MIN, 
 	device_vector<float> d_min(number_of_parts, MIN), d_max(number_of_parts, MAX);
 	bucket_topk(d_data, sel, &d_min, &d_max, d_k, d_end_index, number_of_parts, d_result);
 }
+
+/**********************************************************************************************************/
 
 template<typename Data, typename GetValue>
 __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vector<float> *d_min, device_vector<float> *d_max, device_vector<int> *d_k, device_vector<int> *d_start_index, device_vector<int> *d_end_index, int number_of_parts)
@@ -150,6 +160,8 @@ __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, float MIN, 
 	device_vector<float> d_min(number_of_parts, MIN), d_max(number_of_parts, MAX);
 	bucket_topk(d_data, sel, &d_min, &d_max, d_k, d_start_index, d_end_index, number_of_parts);
 }
+
+/**********************************************************************************************************/
 
 template<typename Data, typename GetValue>
 __host__ void bucket_topk(device_vector<Data> *d_data, GetValue sel, device_vector<float> *d_min, device_vector<float> *d_max, device_vector<int> *d_k, device_vector<int> *d_end_index, int number_of_parts)

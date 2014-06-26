@@ -18,10 +18,11 @@ static __global__ void assign_bucket(Data* data, GetValue sel, Bucket* bucket, i
 
 	int round = (blk_end_index-blk_start_index)/blockDim.x + 1;
     int offset = blockDim.x;
-    int index, bucket_index;
+    int index, bucket_index, bucket_shift_index;
     for(int i=0; i<round; i++)
     {
         index = (blk_start_index+tid)+i*offset;
+        bucket_shift_index = index-start_index[0];
         if(index < blk_end_index)
         {
         	float value = sel.valueOf(data[index]);
@@ -33,8 +34,8 @@ static __global__ void assign_bucket(Data* data, GetValue sel, Bucket* bucket, i
                 bucket_index = number_of_buckets - 1;
             }
             bucket_index = bucket_index + blk_bucket_start_index;
-            bucket[index].a_index = index;
-            bucket[index].b_index = bucket_index;
+            bucket[bucket_shift_index].a_index = index;
+            bucket[bucket_shift_index].b_index = bucket_index;
             atomicAdd(&bucket_size[bucket_index], 1);
         }
     }

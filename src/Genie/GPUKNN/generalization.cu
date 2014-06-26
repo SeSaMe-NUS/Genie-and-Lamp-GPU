@@ -278,17 +278,13 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 		GpuIndexDimensionEntry indexDimEntry = indexDimensionEntry_vec[dim];
 
 		int index_dim_value = keywordMap.mapping(data_keyword,indexDimEntry.bucketWidth);
-
-
-
-
-		//int keyword = y_dim_value + dim * MAX_DIM_VALUE;
 		int keyword_indexMapping = index_dim_value + dim * max_value_per_dimension;
 
 
+		//int keyword = y_dim_value + dim * MAX_DIM_VALUE;
+
 		if (down_pos == 0 && up_pos == 0) {
-			int invert_list_start =
-					keyword_indexMapping == 0 ? 0 : invert_list_idx[keyword_indexMapping - 1];
+			int invert_list_start = keyword_indexMapping == 0 ? 0 : invert_list_idx[keyword_indexMapping - 1];
 			int invert_list_end = invert_list_idx[keyword_indexMapping];
 			int invert_list_size = invert_list_end - invert_list_start;
 			int process_round = invert_list_size / block_size
@@ -301,7 +297,6 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 					int target_idx = qid*dev_maxFeatureID[0]+inv_ent;
 					//query_feature[target_idx].count += 1;
 					atomicAdd(&(query_feature[target_idx].count), 1);
-
 				}
 			}
 		}

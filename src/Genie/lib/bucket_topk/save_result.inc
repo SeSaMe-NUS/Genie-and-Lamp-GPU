@@ -3,29 +3,30 @@
 
 #include <limits.h>
 
-static __global__ void save_result(Bucket* bucket, int* stat_index, int* end_index, int* last_bucket_index, int* thread_start_index, int* thread_end_index, int* result)
+static __global__ void save_result(Bucket* bucket, int* start_index, int* end_index, int* last_bucket_index, int* thread_start_index, int* thread_end_index, int* result)
 {
 	int bid = blockIdx.x;
 	int tid = threadIdx.x;
 	int threadId = bid * blockDim.x + tid;
 
-	int blk_start_index = stat_index[bid];
+	int blk_start_index = start_index[bid];
 	int blk_end_index = end_index[bid];
 
 	int round = (blk_end_index-blk_start_index)/blockDim.x + 1;
 	int offset = blockDim.x;
 
-	int index;
+	int index, bucket_shift_index;
 	int position = thread_start_index[threadId];
 
 	for(int i=0; i<round; i++)
 	{
 		index = (blk_start_index+tid)+i*offset;
+		bucket_shift_index = index-start_index[0];
 		if(index < blk_end_index)
 		{
-			if(bucket[index].b_index < last_bucket_index[bid] && position < thread_end_index[threadId])
+			if(bucket[bucket_shift_index].b_index < last_bucket_index[bid] && position < thread_end_index[threadId])
 			{
-				result[position] = bucket[index].a_index;
+				result[position] = bucket[bucket_shift_index].a_index;
 				position++;
 			}
 		}
@@ -107,17 +108,18 @@ static __global__ void save_miss_array(Bucket* bucket, int* start_index, int* en
 	int round = (blk_end_index-blk_start_index)/blockDim.x + 1;
 	int offset = blockDim.x;
 
-	int index;
+	int index, bucket_shift_index;
 	int position = thread_start_index[threadId];
 
 	for(int i=0; i<round; i++)
 	{
 		index = (blk_start_index+tid)+i*offset;
+		bucket_shift_index = index-start_index[0];
 		if(index < blk_end_index)
 		{
-			if(bucket[index].b_index == last_bucket_index[bid] && position < thread_end_index[threadId])
+			if(bucket[bucket_shift_index].b_index == last_bucket_index[bid] && position < thread_end_index[threadId])
 			{
-				result[position] = bucket[index].a_index;
+				result[position] = bucket[bucket_shift_index].a_index;
 				position++;
 			}
 		}

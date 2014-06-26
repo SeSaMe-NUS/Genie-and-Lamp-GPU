@@ -111,13 +111,14 @@ static __global__ void tid_partition(Bucket* bucket, int* start_index, int* end_
 	int offset = blockDim.x;
 
 	result_thread_partition_size[threadId] = 0;
-	int index;
+	int index, bucket_shift_index;
 	for(int i=0; i<round; i++)
 	{
 		index = (blk_start_index+tid)+i*offset;
+		bucket_shift_index = index - start_index[0];
 		if(index < blk_end_index)
 		{
-			if(bucket[index].b_index < last_bucket_index[bid])
+			if(bucket[bucket_shift_index].b_index < last_bucket_index[bid])
 			{
 				result_thread_partition_size[threadId]++;
 			}
@@ -218,13 +219,14 @@ static __global__ void miss_partition(Bucket* bucket, int* start_index, int* end
 	int offset = blockDim.x;
 
 	miss_thread_partition_size[threadId] = 0;
-	int index;
+	int index, bucket_shift_index;
 	for(int i=0; i<round; i++)
 	{
 		index = (blk_start_index+tid)+i*offset;
+		bucket_shift_index = index - start_index[0];
 		if(index < blk_end_index)
 		{
-			if(bucket[index].b_index == last_bucket_index[bid])
+			if(bucket[bucket_shift_index].b_index == last_bucket_index[bid])
 			{
 				miss_thread_partition_size[threadId]++;
 			}
