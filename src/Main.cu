@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 			sscanf(argv[i+1], "%d", &QUERYNUM);
 	}
 	cout << "TOPK = " << TOPK << ", DIMENSIONNUM = " << DIMENSIONNUM << ", QUERYNUM = " << QUERYNUM << endl;
-	WrapperIndexBuilder wrapperIndexBuilder;
+	//WrapperIndexBuilder wrapperIndexBuilder;
 	//wrapperIndexBuilder.runBuilderIndex();
 
 	WrapperGPUKNN wrapperGpuKnn;
@@ -52,12 +52,12 @@ int main(int argc, char* argv[]) {
 	cout<<endl;
 	cout<<"run CPU Scan ==================="<<endl;
 	//wscan.runCPUEu();
-	//wscan.runCpu_Dtw_scBand();
+	wscan.runCpu_Dtw_scBand();
 
 	cout<<endl;
 	cout<<"run GPU Scan ==================="<<endl;
-	wscan.runGPUEu();
-	//wscan.runGpu_Dtw_scBand();
+	//wscan.runGPUEu();
+	wscan.runGpu_Dtw_scBand();
 
 	//runDevicDetector();
 

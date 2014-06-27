@@ -80,7 +80,7 @@ __global__ void computeScanDist(
 		 int idx = i*blockDim.x + threadIdx.x;
 		 if(idx<blade_len-queryLen+1){
 
-			 T res = distFunc.dist(sm_query, 0, blade_data_vec, blade_start_idx+idx, queryLen);
+			 float res = distFunc.dist(sm_query, 0, blade_data_vec, blade_start_idx+idx, queryLen);
 
 			 _distanceComp_vec[result_start_idx + idx] = res;
 

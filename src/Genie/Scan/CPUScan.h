@@ -49,12 +49,12 @@ public:
 
 
 	 			cout<<"the time of top-"<< k <<" in CPU version is:"<< (double)t / CLOCKS_PER_SEC <<endl;
-	 			cout<<"the result is:"<<endl;
+	 			//cout<<"the result is:"<<endl;
 	 			for(int i=0;i<query.size();i++){
 	 				//cout<<"print result of Query["<<i<<"]"<<endl;
 	 				//cout<<"start ================================"<<endl;
 	 				for(int j=0;j<k;j++){
-	 					//resVec[i][j].print();//<<endl;
+	 				//	resVec[i][j].print();//<<endl;
 	 				}
 	 				//cout<<"end =================================="<<endl;
 	 			}
