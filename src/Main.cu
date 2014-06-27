@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 	}
 	cout << "TOPK = " << TOPK << ", DIMENSIONNUM = " << DIMENSIONNUM << ", QUERYNUM = " << QUERYNUM << endl;
 	WrapperIndexBuilder wrapperIndexBuilder;
-	wrapperIndexBuilder.runBuilderIndex();
+	//wrapperIndexBuilder.runBuilderIndex();
 
 	WrapperGPUKNN wrapperGpuKnn;
 	cout<<endl;

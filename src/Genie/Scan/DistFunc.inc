@@ -200,10 +200,10 @@ __host__ __device__ T dtw_compressDP(const T* Q, uint q_len, const T* C, uint c_
  *   spill the data into global memory
  */
 #define MAX_SCBAND 64
-template <class T>
+//template <class T>
 struct WarpingMaxtrix{
 
-	T d[MAX_SCBAND][2];//rounding with the MAX_SCBAND
+	float d[MAX_SCBAND][2];//rounding with the MAX_SCBAND
 
 	uint mod;
 
@@ -212,24 +212,24 @@ struct WarpingMaxtrix{
 		this->mod = 2*sc_band+1+1;//one elements to store the maximum value, ether one is the element self
 
 		for(int i=1;i< mod;i++){
-			d[i][0]=(T)INT_MAX;
+			d[i][0]=(float)INT_MAX;
 			d[i][1] = 0;
 		}
 
 		d[0][0] = 0;// d[0][0]=c(1)-q(0)
-		d[0][1] = (T) INT_MAX;
+		d[0][1] = (float) INT_MAX;
 	}
 
-	__host__ __device__ T& operator() (int i, int j){
+	__host__ __device__ float& operator() (int i, int j){
 		return d[i%mod][j%2];
 	}
 };
 
 template <class T>
-__host__ __device__ T dtw_DP_SCBand_modulus(const T* Q, uint q_len,const T* C, uint c_len, uint r){
+__host__ __device__ float dtw_DP_SCBand_modulus(const T* Q, uint q_len,const T* C, uint c_len, uint r){
 
 
-	WarpingMaxtrix<T> d(r);
+	WarpingMaxtrix d(r);
 
 	T dist = 0;
 
@@ -238,9 +238,9 @@ __host__ __device__ T dtw_DP_SCBand_modulus(const T* Q, uint q_len,const T* C, u
 		uint start_i = j<r+1 ? 1 : (j-r);
 		uint end_i = j+r>(q_len)? q_len:(j+r);
 
-		d(start_i-1,j) = (T) INT_MAX;
+		d(start_i-1,j) = (float) INT_MAX;
 		if(j+r<= q_len){
-			d(j+r,j-1) = (T) INT_MAX;
+			d(j+r,j-1) = (float) INT_MAX;
 		}
 
 		for(uint i = start_i;i<=end_i;i++){
@@ -441,9 +441,9 @@ __host__ __device__ T dtw_AuxRecur_SCBand(const T* Q, uint qi, const T* C, uint 
 
 
 template <class T>
-__host__ __device__ T eu( const T* Q, uint sq, const T* C, uint sc, uint cq_len){
+__host__ __device__ float eu( const T* Q, uint sq, const T* C, uint sc, uint cq_len){
 
-	T d = 0;
+	float d = 0;
 	for(uint i=0;i<cq_len;i++){
 		d+=(C[i+sc]-Q[i+sq])*(C[i+sc]-Q[i+sq]);
 	}

@@ -23,10 +23,10 @@
 //	__host__ __device__ virtual ~DistFunc();
 
 template<class T>
-__host__ __device__ T eu(const T* Q, uint sq,const T* C, uint sc, uint cq_len);
+__host__ __device__ float eu(const T* Q, uint sq,const T* C, uint sc, uint cq_len);
 
 template <class T>
-__host__ __device__ T dtw_DP_SCBand_modulus(const T* Q, uint q_len,const T* C, uint c_len, uint r);
+__host__ __device__ float dtw_DP_SCBand_modulus(const T* Q, uint q_len,const T* C, uint c_len, uint r);
 
 template<class T>
 __host__ __device__ T dtw(const T* Q, uint sq, const T* C, uint sc, uint cq_len);
@@ -67,9 +67,9 @@ struct Eu_Func{
 
 	}
 
-	__host__ __device__ T dist ( const T* Q, uint sq, const T* C, uint sc, uint cq_len){
+	__host__ __device__ float dist ( const T* Q, uint sq, const T* C, uint sc, uint cq_len){
 
-		T d = 0;
+		float d = 0;
 
 		d = eu(Q,sq,C,sc,cq_len);
 
@@ -103,7 +103,7 @@ struct Dtw_SCBand_Func_modulus{
 		this->sc_band = sc_band;
 	}
 
-	__host__ __device__ T dist ( const T* Q, uint sq, const T* C, uint sc, uint cq_len){
+	__host__ __device__ float dist ( const T* Q, uint sq, const T* C, uint sc, uint cq_len){
 		return dtw_DP_SCBand_modulus( Q+sq, cq_len,C+sc, cq_len, sc_band);
 	}
 
