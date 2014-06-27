@@ -132,6 +132,6 @@ void GPUScan::computTopk_int_dtw_scBand(vector<vector<int> >& query, int k,
 		for (int j = 0; j < topk_result_idx[i].size(); j++) {
 			//cout<<"query item ["<<i<<"] result "<< j<<":"<<topk_result_idx[i][j].idx<<" dist:"<<topk_result_idx[i][j].dis<<endl;
 		}
-		cout << endl;
+		//cout << endl;
 	}
 }

@@ -452,9 +452,9 @@ __host__ __device__ float eu( const T* Q, uint sq, const T* C, uint sc, uint cq_
 
 
 template <class T>
-__host__ __device__ T LowerBound_keogh_byQ(const T* Q, int sq, const T* C, int sc, int cq_len, int sc_band){
+__host__ __device__ float LowerBound_keogh_byQ(const T* Q, int sq, const T* C, int sc, int cq_len, int sc_band){
 
-		T dist = 0;
+		float dist = 0;
 
 		for (int i = 0; i < cq_len; i++) {
 			int j = (i - sc_band <= 0) ?
@@ -462,8 +462,8 @@ __host__ __device__ T LowerBound_keogh_byQ(const T* Q, int sq, const T* C, int s
 			int e = ( i + sc_band >= (cq_len - 1)) ?
 					(cq_len - 1) : (i + sc_band);
 
-			T up = -(T) INT_MAX; //find maximum value within [i-r,i+r]
-			T down = (T) INT_MAX; //find minimum value within [i-r,i+r]
+			float up = -(float) INT_MAX; //find maximum value within [i-r,i+r]
+			float down = (float) INT_MAX; //find minimum value within [i-r,i+r]
 
 			for (; j <= e; j++) {
 				if (up < Q[j+sq]) {

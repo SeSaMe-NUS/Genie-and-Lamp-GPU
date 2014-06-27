@@ -28,6 +28,10 @@ __host__ __device__ float eu(const T* Q, uint sq,const T* C, uint sc, uint cq_le
 template <class T>
 __host__ __device__ float dtw_DP_SCBand_modulus(const T* Q, uint q_len,const T* C, uint c_len, uint r);
 
+//for LB_Keogh
+template<class T>
+__host__ __device__ float LowerBound_keogh_byQ(const T* Q, int sq, const T* C, int sc, int cq_len, int sc_band);
+
 template<class T>
 __host__ __device__ T dtw(const T* Q, uint sq, const T* C, uint sc, uint cq_len);
 
@@ -53,9 +57,7 @@ template<class T>
 __host__ __device__ T dtw_AuxRecur_SCBand(const T* Q, uint qi, const T* C, uint cj, uint r);
 //};
 
-//for LB_Keogh
-template<class T>
-__host__ __device__ T LowerBound_keogh_byQ(const T* Q, int sq, const T* C, int sc, int cq_len, int sc_band);
+
 
 
 
@@ -118,14 +120,14 @@ struct Dtw_SCBand_LBKeogh {
 	__host__ __device__ Dtw_SCBand_LBKeogh(uint sc_band) {
 		this->sc_band = sc_band;
 	}
-	__host__ __device__ T LowerBound_keogh_byQuery(const T* Q, int sq,
+	__host__ __device__ float LowerBound_keogh_byQuery(const T* Q, int sq,
 			const T* C, int sc, int cq_len) {
 
 		return LowerBound_keogh_byQ(Q, sq, C, sc, cq_len, sc_band);
 
 	}
 
-	__host__ __device__ T LowerBound_keogh_byData(const T* Q, int sq,
+	__host__ __device__ float LowerBound_keogh_byData(const T* Q, int sq,
 			const T* C, int sc, int cq_len) {
 
 		return LowerBound_keogh_byQ(C, sc, Q, sq, cq_len, sc_band);

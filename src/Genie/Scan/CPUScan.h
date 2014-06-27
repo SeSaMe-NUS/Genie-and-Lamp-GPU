@@ -54,7 +54,7 @@ public:
 	 				//cout<<"print result of Query["<<i<<"]"<<endl;
 	 				//cout<<"start ================================"<<endl;
 	 				for(int j=0;j<k;j++){
-	 				//	resVec[i][j].print();//<<endl;
+	 					//resVec[i][j].print();//<<endl;
 	 				}
 	 				//cout<<"end =================================="<<endl;
 	 			}
@@ -79,7 +79,7 @@ public:
 
 			for (uint i = 0; i < data.size() - dim; i++) {
 
-				T di = 0;
+				float di = 0;
 
 				di = distFunc.dist(q.data(), 0, data.data(), i, dim);
 
