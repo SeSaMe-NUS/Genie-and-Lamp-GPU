@@ -512,6 +512,7 @@ void invListBuilder::runBuildQuery(string fName, int fCol, string ft, string que
 
 	DataProcess dp;
 	dp.writeQueryFile(queryName.c_str(), query);
+
 	cout<<"queries has been writen to "<<queryName<<" !"<<endl;
 
 

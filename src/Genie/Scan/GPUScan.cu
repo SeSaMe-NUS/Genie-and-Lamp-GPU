@@ -54,6 +54,18 @@ void convterIntToFloat(vector<vector<int> >& query,vector<vector<int> >& bladeDa
 
 }
 
+void printResult(vector<vector<topNode> >& topk_result_idx){
+
+	cout<<"the result of GPU scan is:"<<endl;
+	for(int i=0;i<topk_result_idx.size();i++){
+		cout<<"query item ["<<i<<"]"<<endl;
+		for(int j=0;j<topk_result_idx[i].size();j++){
+			cout<<"query item ["<<i<<"] result "<< j<<":"<<topk_result_idx[i][j].idx<<" dist:"<<topk_result_idx[i][j].dis<<endl;
+		}
+		cout<<endl;
+	}
+}
+
 void GPUScan::computTopk_int_eu(vector<vector<int> >& query, int k,
 		vector<int> & data) {
 
@@ -72,29 +84,15 @@ void GPUScan::computTopk_int_eu(vector<vector<int> >& query, int k,
 
 	 convterIntToFloat(query,bladeData, query_flt, bladeData_flt);
 
-	struct timeval start;
-	struct timeval end;
-
-	cudaEvent_t start_t, stop_t;
-	float elapsedTime;
-	cudaEventCreate(&start_t);
-	cudaEventCreate(&stop_t);
-	cudaEventRecord(start_t, 0);
-
+	struct timeval tim;
+	gettimeofday(&tim, NULL);
+	double t_start=tim.tv_sec+(tim.tv_usec/1000000.0);
 	GPU_computeTopk(query_flt, query_blade_id, bladeData_flt, topk_vec, Eu_Func<float>(), topk_result_idx );
+	gettimeofday(&tim, NULL);
+	double t_end=tim.tv_sec+(tim.tv_usec/1000000.0);
+	cout<<"running time of GPU scan is:"<<t_end-t_start<<" s"<<endl;
 
-	cudaEventRecord(stop_t, 0);
-	cudaEventSynchronize(stop_t);
-	cudaEventElapsedTime(&elapsedTime, start_t, stop_t);
-	cout << "GPU SCAN Time used: " << elapsedTime/1000 << endl;
-
-	for(int i=0;i<topk_result_idx.size();i++){
-		cout<<"query item ["<<i<<"]"<<endl;
-		for(int j=0;j<topk_result_idx[i].size();j++){
-			cout<<"query item ["<<i<<"] result "<< j<<":"<<topk_result_idx[i][j].idx<<" dist:"<<topk_result_idx[i][j].dis<<endl;
-		}
-		cout<<endl;
-	}
+	//printResult( topk_result_idx);
 
 
 }
@@ -119,19 +117,15 @@ void GPUScan::computTopk_int_dtw_scBand(vector<vector<int> >& query, int k,
 		vector<vector<float> > bladeData_flt;
 
 		convterIntToFloat(query,bladeData, query_flt, bladeData_flt);
-		struct timeval start;
-		struct timeval end;
 
-		gettimeofday(&start, NULL);
+		struct timeval tim;
+		gettimeofday(&tim, NULL);
+		double t_start=tim.tv_sec+(tim.tv_usec/1000000.0);
 		GPU_computeTopk(query_flt, query_blade_id, bladeData_flt, topk_vec, Dtw_SCBand_Func_modulus<float>(sc_band),topk_result_idx);
-		gettimeofday(&end, NULL);
-		float delta_time = (end.tv_sec* 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
-		//cout << "GPU SCAN Time used: " << delta_time << endl;
-		for (int i = 0; i < topk_result_idx.size(); i++) {
-		//cout << "query item [" << i << "]" << endl;
-		for (int j = 0; j < topk_result_idx[i].size(); j++) {
-			//cout<<"query item ["<<i<<"] result "<< j<<":"<<topk_result_idx[i][j].idx<<" dist:"<<topk_result_idx[i][j].dis<<endl;
-		}
-		//cout << endl;
-	}
+		gettimeofday(&tim, NULL);
+		double t_end=tim.tv_sec+(tim.tv_usec/1000000.0);
+		cout<<"running time of GPU scan is:"<<t_end-t_start<<" s"<<endl;
+
+		//printResult( topk_result_idx);
+
 }
