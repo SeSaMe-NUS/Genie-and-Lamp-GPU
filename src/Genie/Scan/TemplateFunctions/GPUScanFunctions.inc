@@ -118,8 +118,8 @@ void inline getMinMax(device_vector<float>& d_data_vec, float & min, float& max)
  }
 
 
-
-void inline splitDeviceVector(device_vector<int>& master, device_vector<int>& first, device_vector<int>& second){
+template<typename T>
+void inline splitDeviceVector(device_vector<T>& master, device_vector<T>& first, device_vector<T>& second){
 
 	first.resize(master.size()/2);
 	second.resize(master.size()/2+master.size()%2);
@@ -244,30 +244,36 @@ void inline splitDeviceVector(device_vector<int>& master, device_vector<int>& fi
   			&d_topk_distComp_idSet);
 
   	}else{
-  		device_vector<int> d_topk_vec_first(d_topk_vec.size()/2);
-  		device_vector<int> d_topk_vec_second(d_topk_vec.size()/2);
+  		device_vector<int> d_topk_vec_first;
+  		device_vector<int> d_topk_vec_second;
   		splitDeviceVector(d_topk_vec, d_topk_vec_first, d_topk_vec_second);
 
 
-  		device_vector<int> d_distComp_vec_startIdx_first(d_distComp_vec_startIdx.size()/2);
-  		device_vector<int> d_distComp_vec_startIdx_second(d_distComp_vec_startIdx.size()/2);
+  		device_vector<int> d_distComp_vec_startIdx_first;
+  		device_vector<int> d_distComp_vec_startIdx_second;
   		splitDeviceVector(d_distComp_vec_startIdx, d_distComp_vec_startIdx_first, d_distComp_vec_startIdx_second);
 
-  		device_vector<int> d_distComp_vec_endIdx_first(d_distComp_vec_endIdx.size()/2);
-  		device_vector<int> d_distComp_vec_endIdx_second(d_distComp_vec_endIdx.size()/2);
+  		device_vector<int> d_distComp_vec_endIdx_first;
+  		device_vector<int> d_distComp_vec_endIdx_second;
   		splitDeviceVector(d_distComp_vec_endIdx, d_distComp_vec_endIdx_first, d_distComp_vec_endIdx_second);
+
+  		device_vector<float> d_min_first, d_min_second;
+  		splitDeviceVector(min_vec, d_min_first, d_min_second);
+
+  		device_vector<float> d_max_first, d_max_second;
+  		splitDeviceVector(max_vec, d_max_first, d_max_second);
 
   		device_vector<int> d_topk_distComp_idSet_first;
   		device_vector<int> d_topk_distComp_idSet_second;
   		bucket_topk(&d_distComp_vec,
-  		  			ValueOfSeletion<float>(), &min_vec, &max_vec,
+  		  			ValueOfSeletion<float>(), &d_min_first, &d_max_first,
   		  			&d_topk_vec_first,
   		  			&d_distComp_vec_startIdx_first, &d_distComp_vec_endIdx_first,
   		  			d_topk_vec_first.size(),
   		  			&d_topk_distComp_idSet_first);
 
   		bucket_topk(&d_distComp_vec,
-  		  		  	ValueOfSeletion<float>(), &min_vec, &max_vec,
+  		  		  	ValueOfSeletion<float>(), &d_min_second, &d_max_second,
   		  		  	&d_topk_vec_second,
   		  		  	&d_distComp_vec_startIdx_second, &d_distComp_vec_endIdx_second,
   		  		  	d_topk_vec_second.size(),
