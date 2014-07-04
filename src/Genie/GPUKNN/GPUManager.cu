@@ -645,6 +645,7 @@ void GPUManager::get_invert_list_from_binary_file ( string filename, int& _numbe
 
 				// update the previous position
 				previousKey = key;
+				hdmap.map(key, keyPosition);
 			}
 
 			// fill the key positions for the empty keys
@@ -657,6 +658,7 @@ void GPUManager::get_invert_list_from_binary_file ( string filename, int& _numbe
 
 			inFile.close();
 			inFile.clear();
+			hdmap.freeze();
 		}
 
 //		featureIdListIndex.erase(featureIdListIndex.begin());

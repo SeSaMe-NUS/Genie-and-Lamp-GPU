@@ -9,6 +9,7 @@
 #define GPUMANAGER_H_
 
 #include "generalization.h"
+#include "../lib/HDMap/HDMap.h"
 
 
 using namespace std;
@@ -121,6 +122,8 @@ public:
 	int topK;
 
 	// inverted list and the index
+	HDMap<int, InvlistEnt> hdmap; //Yiwei, imwithye@gmail.com
+
 	device_vector<InvlistEnt> d_invert_list;
 
 	device_vector<int> d_invert_list_idx;
