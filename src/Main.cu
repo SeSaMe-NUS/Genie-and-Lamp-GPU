@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 	WrapperGPUKNN wrapperGpuKnn;
 	cout<<endl;
 	cout<<"run GPU inverted index ==================="<<endl;
-	//wrapperGpuKnn.runGPUKNN();
+	wrapperGpuKnn.runGPUKNN();
 
 
 
