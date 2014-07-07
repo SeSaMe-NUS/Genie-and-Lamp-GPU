@@ -988,6 +988,7 @@ void GPUManager::copy_QueryInfo_vec_fromHostToDevice(  host_vector<QueryInfo*>& 
 		float *dimWeight;
 		float *upperBoundDist;
 		float *lowerBoundDist;
+		int *keyword_indexMapping;
 
 		cudaMalloc((void **) &searchDim, sizeof(int) * size);
 		cudaMalloc((void **) &distanceFunc, sizeof(int) * size);
@@ -998,6 +999,7 @@ void GPUManager::copy_QueryInfo_vec_fromHostToDevice(  host_vector<QueryInfo*>& 
 		cudaMalloc((void **) &dimWeight, sizeof(float) * size);
 		cudaMalloc((void **) &upperBoundDist, sizeof(float) * size);
 		cudaMalloc((void **) &lowerBoundDist, sizeof(float) * size);
+		cudaMalloc((void **) &keyword_indexMapping, sizeof(int) * size);
 
 
 		cudaMemcpy(searchDim, hostQueryInfo->searchDim, sizeof(int) * size, cudaMemcpyHostToDevice);
@@ -1009,6 +1011,7 @@ void GPUManager::copy_QueryInfo_vec_fromHostToDevice(  host_vector<QueryInfo*>& 
 		cudaMemcpy(dimWeight, hostQueryInfo->dimWeight, sizeof(float) * size, cudaMemcpyHostToDevice);
 		cudaMemcpy(upperBoundDist, hostQueryInfo->upperBoundDist, sizeof(float) * size, cudaMemcpyHostToDevice);
 		cudaMemcpy(lowerBoundDist, hostQueryInfo->lowerBoundDist, sizeof(float) * size, cudaMemcpyHostToDevice);
+		cudaMemcpy(keyword_indexMapping, hostQueryInfo->keyword_indexMapping, sizeof(int) * size, cudaMemcpyHostToDevice);
 
 
 		// copy pointer to gpu
@@ -1021,6 +1024,7 @@ void GPUManager::copy_QueryInfo_vec_fromHostToDevice(  host_vector<QueryInfo*>& 
 		cudaMemcpy(&(devQueryInfo->dimWeight), &dimWeight, sizeof(float *), cudaMemcpyHostToDevice);
 		cudaMemcpy(&(devQueryInfo->upperBoundDist), &upperBoundDist, sizeof(float *), cudaMemcpyHostToDevice);
 		cudaMemcpy(&(devQueryInfo->lowerBoundDist), &lowerBoundDist, sizeof(float *), cudaMemcpyHostToDevice);
+		cudaMemcpy(&(devQueryInfo->keyword_indexMapping), &keyword_indexMapping, sizeof(int *), cudaMemcpyHostToDevice);
 
 
 		_dvec.push_back(devQueryInfo);
