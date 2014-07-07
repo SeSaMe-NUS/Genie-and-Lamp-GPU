@@ -279,6 +279,9 @@ __host__ QueryInfo::QueryInfo( const GpuQuery& query )
 		// NEED TO ADD LATER: search lower bound and upper bound of different dimension.
 		this->upperBoundSearch[i] = query.upwardSearchBound[i];
 		this->lowerBoundSearch[i] = query.downwardSearchBound[i];
+
+		// TODO: init keyword_indexMapping YIWEI;
+		this->keyword_indexMapping[i] = 0;
 	}
 }
 
@@ -314,6 +317,8 @@ __host__ __device__ void QueryInfo::initMemberArrays(int nds) {
 
 	upperBoundSearch = new int[nds];
 	lowerBoundSearch = new int[nds];
+
+	keyword_indexMapping = new int[nds];
 
 }
 

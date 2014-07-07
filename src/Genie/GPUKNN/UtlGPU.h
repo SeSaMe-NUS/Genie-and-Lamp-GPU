@@ -241,6 +241,8 @@ public:
 	//use close interval, this bound is to define the search buckets
 	int *upperBoundSearch;	// search bound when going up
 	int *lowerBoundSearch;	// search boudn when going down
+
+	int *keyword_indexMapping;
 };
 
 
