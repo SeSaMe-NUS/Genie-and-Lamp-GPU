@@ -213,11 +213,12 @@ void GPUManager::init_GPU_query( vector<GpuQuery>& query_set )
 	                //USE Mapping function
 	                int dim = queryInfo->searchDim[i];
 	                int key = (int)queryInfo->keyword[i]+0.5 + dim*max_value_per_dimension;
-	                try {
-	                    queryInfo->keyword_indexMapping[i] = hdmap.get(key);
-	                } catch(int code) {
-	                    queryInfo->keyword_indexMapping[i] = hdmap.get(hdmap.get_fuzzy_lower_key(key));
-	                }
+	                for(int j=0; j<queryInfo->numOfDimensionToSearch; j++)
+	                  try {
+	                      queryInfo->keyword_indexMapping[j] = hdmap.get(key);
+	                  } catch(int code) {
+	                    queryInfo->keyword_indexMapping[j] = hdmap.get(hdmap.get_fuzzy_lower_key(key));
+	                  }
 			h_query_info.push_back( queryInfo );
 		}
 
