@@ -303,7 +303,7 @@ bool GPUManager::bi_direction_query_KernelPerDim(int threshold, int topKValue,
 	compute_mapping_saving_pos_KernelPerDim_template<<<sumQueryDims,
 			THREAD_PER_BLK>>>(raw_pointer_cast(this->d_query_info.data()),
 			raw_pointer_cast(this->d_invert_list.data()),
-			raw_pointer_cast(this->d_invert_list_idx.data()),
+			raw_pointer_cast(this->hdmap.raw_value().data()), //raw_pointer_cast(this->d_invert_list_idx.data()),
 			raw_pointer_cast(this->d_query_feature.data()),	//QueryFeatureEnt* query_feature, i.e. count&ACD table
 			false, max_value_per_dimension,
 			raw_pointer_cast(this->d_indexDimensionEntry_vec.data()),
@@ -481,7 +481,7 @@ void GPUManager::point_query(vector<Result>& result, int threshold)
 			max_number_of_dimensions>>>(
 			raw_pointer_cast(this->d_query_info.data()),
 			raw_pointer_cast(this->d_invert_list.data()),
-			raw_pointer_cast(this->d_invert_list_idx.data()),
+			raw_pointer_cast(this->hdmap.raw_value().data()), //raw_pointer_cast(this->d_invert_list_idx.data()),
 			raw_pointer_cast(this->d_query_feature.data()), true,
 			max_value_per_dimension,
 			raw_pointer_cast(this->d_indexDimensionEntry_vec.data()),
@@ -856,7 +856,7 @@ void GPUManager::dev_BidirectionExpansion(KEYWORDMAP keywordMap,
 	compute_mapping_saving_pos_KernelPerDim_template<<<sumQueryDims,
 			THREAD_PER_BLK>>>(raw_pointer_cast(this->d_query_info.data()),
 			raw_pointer_cast(this->d_invert_list.data()),
-			raw_pointer_cast(this->d_invert_list_idx.data()),
+			raw_pointer_cast(this->hdmap.raw_value().data()), //raw_pointer_cast(this->d_invert_list_idx.data()),
 			raw_pointer_cast(this->d_query_feature.data()),	//QueryFeatureEnt* query_feature, i.e. count&ACD table
 			false,
 			max_value_per_dimension,//logical unit, caculated by the number of bits allocated for value

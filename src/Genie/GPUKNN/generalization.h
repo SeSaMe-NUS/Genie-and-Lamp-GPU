@@ -210,7 +210,7 @@ __device__ bool checkQuery(QueryInfo** query_list);
 
 template<class KEYWORDMAP, class LASTPOSMAP, class DISTFUNC>
 __global__ void compute_mapping_saving_pos_KernelPerDim_template(
-		QueryInfo** query_list, InvlistEnt* invert_list, int* invert_list_idx,
+		QueryInfo** query_list, InvlistEnt* invert_list, KeyAndIndex* invert_list_idx,
 		QueryFeatureEnt* query_feature, bool point_search,
 		int max_value_per_dimension,
 		GpuIndexDimensionEntry* indexDimensionEntry_vec, KEYWORDMAP keywordMap,

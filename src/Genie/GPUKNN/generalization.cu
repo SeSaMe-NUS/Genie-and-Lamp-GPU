@@ -257,7 +257,7 @@ __global__ void printConstMem()
  */
 template<class KEYWORDMAP, class LASTPOSMAP, class DISTFUNC>
 __global__ void compute_mapping_saving_pos_KernelPerDim_template(
-		QueryInfo** query_list, InvlistEnt* invert_list, int* invert_list_idx,
+		QueryInfo** query_list, InvlistEnt* invert_list, KeyAndIndex* invert_list_idx,
 		QueryFeatureEnt* query_feature, bool point_search,
 		int max_value_per_dimension,
 		GpuIndexDimensionEntry* indexDimensionEntry_vec, KEYWORDMAP keywordMap,
@@ -301,8 +301,8 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 		{
 			int invert_list_start =
 					keyword_indexMapping == 0 ?
-							0 : invert_list_idx[keyword_indexMapping - 1];
-			int invert_list_end = invert_list_idx[keyword_indexMapping];
+							0 : invert_list_idx[keyword_indexMapping - 1].index;
+			int invert_list_end = invert_list_idx[keyword_indexMapping].index;
 			int invert_list_size = invert_list_end - invert_list_start;
 			int process_round = invert_list_size / block_size
 					+ (invert_list_size % block_size != 0);
@@ -342,8 +342,8 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 					+ dim * max_value_per_dimension;
 
 			int invert_list_start =
-					down_keyword == 0 ? 0 : invert_list_idx[down_keyword - 1];
-			int invert_list_end = invert_list_idx[down_keyword];
+					down_keyword == 0 ? 0 : invert_list_idx[down_keyword - 1].index;
+			int invert_list_end = invert_list_idx[down_keyword].index;
 			int invert_list_size = invert_list_end - invert_list_start;
 			int process_round = invert_list_size / block_size
 					+ (invert_list_size % block_size != 0);
@@ -388,8 +388,8 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 			int up_keyword = index_dim_up_value + dim * max_value_per_dimension;
 
 			int invert_list_start =
-					up_keyword == 0 ? 0 : invert_list_idx[up_keyword - 1];
-			int invert_list_end = invert_list_idx[up_keyword];
+					up_keyword == 0 ? 0 : invert_list_idx[up_keyword - 1].index;
+			int invert_list_end = invert_list_idx[up_keyword].index;
 			int invert_list_size = invert_list_end - invert_list_start;
 			int process_round = invert_list_size / block_size
 					+ (invert_list_size % block_size != 0);
@@ -433,7 +433,7 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 template __global__ void compute_mapping_saving_pos_KernelPerDim_template<
 		DataToIndex_keywordMap_bucketUnit, IndexToData_lastPosMap_bucketUnit,
 		Lp_distance>(QueryInfo** query_list, InvlistEnt* invert_list,
-		int* invert_list_idx, QueryFeatureEnt* query_feature, bool point_search,
+		KeyAndIndex* invert_list_idx, QueryFeatureEnt* query_feature, bool point_search,
 		int max_value_per_dimension,
 		GpuIndexDimensionEntry* indexDimensionEntry_vec,
 		DataToIndex_keywordMap_bucketUnit intListmap,
@@ -442,7 +442,7 @@ template __global__ void compute_mapping_saving_pos_KernelPerDim_template<
 template __global__ void compute_mapping_saving_pos_KernelPerDim_template<
 		DataToIndex_keywordMap_bucket, IndexToData_lastPosMap_bucket_exclusive,
 		Lp_distance>(QueryInfo** query_list, InvlistEnt* invert_list,
-		int* invert_list_idx, QueryFeatureEnt* query_feature, bool point_search,
+		KeyAndIndex* invert_list_idx, QueryFeatureEnt* query_feature, bool point_search,
 		int max_value_per_dimension,
 		GpuIndexDimensionEntry* indexDimensionEntry_vec,
 		DataToIndex_keywordMap_bucket intListmap,
