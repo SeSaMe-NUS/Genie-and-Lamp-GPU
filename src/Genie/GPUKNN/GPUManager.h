@@ -11,17 +11,16 @@
 #include "generalization.h"
 #include "../lib/HDMap/HDMap.h"
 
-
 using namespace std;
 using namespace thrust;
 
-
-class GPUManager {
+class GPUManager
+{
 
 public:
-	GPUManager( );
-	GPUManager( GPUSpecification& );
-	GPUManager( GPUSpecification& query_spec, int rand_invert_list_size );
+	GPUManager();
+	GPUManager(GPUSpecification&);
+	GPUManager(GPUSpecification& query_spec, int rand_invert_list_size);
 
 	/* clear all gpu memory */
 	~GPUManager();
@@ -33,17 +32,21 @@ public:
 	void conf_GPUManager_GPUSpecification(GPUSpecification& gpu_spec);
 	/* setup a new batch of query */
 	void init_GPU_query(vector<GpuQuery>& query_set);
-	void init_dimensionNum_perQuery( int dimensionNumPerQuery ){init_dev_dimNumPerQuery_constMem(dimensionNumPerQuery);}
+	void init_dimensionNum_perQuery(int dimensionNumPerQuery)
+	{
+		init_dev_dimNumPerQuery_constMem(dimensionNumPerQuery);
+	}
 
 	void init_parameters_default();
 	/*
 	 run this batch of query which just initialized, should not be mixed with point_query
 	 threshold is for count, if count > threshold, then result will be considered
 
-	  each query take one block (kernel), therefore this function is query oriented parallel computing, this is an old version
+	 each query take one block (kernel), therefore this function is query oriented parallel computing, this is an old version
 	 */
 
-	bool bi_direction_query_KernelPerDim (int threshold, int topKValue, vector<Result>& _result );
+	bool bi_direction_query_KernelPerDim(int threshold, int topKValue,
+			vector<Result>& _result);
 
 	/*
 	 this method should be only call once, then no more calls including bi_direciton query should be made
@@ -53,12 +56,9 @@ public:
 
 	/*-------------------------------------------------------------------------------- */
 	//Open API
-	template <class KEYWORDMAP, class LASTPOSMAP, class DISTFUNC>
-	void dev_BidirectionExpansion(
-			KEYWORDMAP keywordMap,
-			LASTPOSMAP lastPosMap,
+	template<class KEYWORDMAP, class LASTPOSMAP, class DISTFUNC>
+	void dev_BidirectionExpansion(KEYWORDMAP keywordMap, LASTPOSMAP lastPosMap,
 			DISTFUNC distFunc);
-
 
 	/* ---------------------------------- debug --------------------------------------- */
 	void print_query();
@@ -67,7 +67,6 @@ public:
 	// void print_seperate_line();
 	void print_result_vec(vector<Result>& result_vec);
 	void printPrunStatistics();
-
 
 	// random generate inverted list
 	void rand_inv_list();
@@ -79,38 +78,75 @@ public:
 
 	// retrieve invert list from binary given the filename, and read the number of dimension and max value per
 	//dimension from the binary file
-	void get_invert_list_from_binary_file(string filenames, int& _numberOfDim,  int& _maxValuePerDim, int& _maxFeatureID);
-
+	void get_invert_list_from_binary_file(string filenames, int& _numberOfDim,
+			int& _maxValuePerDim, int& _maxFeatureID);
 
 	// clear memory to setup new round of query search
 	void clear_query_memory();
-	void set_query_DefaultDisFuncType(float p) {default_disfuncType=p; };
-	void set_query_DefaultDistBound(float up, float down){default_upwardDistBound = up; default_downwardDistBound = down;}
-	void update_windowQuery_entryAndTable(QueryInfo* host_queryInfo, int d_query_info_id);
+	void set_query_DefaultDisFuncType(float p)
+	{
+		default_disfuncType = p;
+	}
+	;
+	void set_query_DefaultDistBound(float up, float down)
+	{
+		default_upwardDistBound = up;
+		default_downwardDistBound = down;
+	}
+	void update_windowQuery_entryAndTable(QueryInfo* host_queryInfo,
+			int d_query_info_id);
 	void update_windowQuery_entryAndTable(GpuQuery& windowQuery);
-	void update_QueryInfo_entry_upperAndLowerBound(int queryId, vector<float>& new_upperBoundDist, vector<float>& new_lowerBoundDist);
+	void update_QueryInfo_entry_upperAndLowerBound(int queryId,
+			vector<float>& new_upperBoundDist,
+			vector<float>& new_lowerBoundDist);
 
 	void runTest();
-	int getMaxFeatureID() const { return invert_list_spec_host.maxFeatureID;}
-	int getSumQueryDims() const {return sumQueryDims;}//this variable record the total number of dimensions of all queries. It is used to indicate the number of kernels
-	int getTotalnumOfQuery() const {return invert_list_spec_host.numOfQuery;}
-	device_vector<QueryFeatureEnt>& get_d_query_feature_reference(){return d_query_feature;};
-	device_vector<QueryInfo*>& get_d_query_info_reference(){return d_query_info;};
-	device_vector<GpuIndexDimensionEntry>& get_d_indexDimensionEntry_vec_reference(){return this->d_indexDimensionEntry_vec;}
-	QueryInfo* getQueryInfo(int queryInfo_id) {return h_query_info[queryInfo_id];}
+	int getMaxFeatureID() const
+	{
+		return invert_list_spec_host.maxFeatureID;
+	}
+	int getSumQueryDims() const
+	{
+		return sumQueryDims;
+	}//this variable record the total number of dimensions of all queries. It is used to indicate the number of kernels
+	int getTotalnumOfQuery() const
+	{
+		return invert_list_spec_host.numOfQuery;
+	}
+	device_vector<QueryFeatureEnt>& get_d_query_feature_reference()
+	{
+		return d_query_feature;
+	}
+	;
+	device_vector<QueryInfo*>& get_d_query_info_reference()
+	{
+		return d_query_info;
+	}
+	;
+	device_vector<GpuIndexDimensionEntry>& get_d_indexDimensionEntry_vec_reference()
+	{
+		return this->d_indexDimensionEntry_vec;
+	}
+	QueryInfo* getQueryInfo(int queryInfo_id)
+	{
+		return h_query_info[queryInfo_id];
+	}
 
 private:
 
-	void copy_QueryInfo_vec_fromHostToDevice(host_vector<QueryInfo*>& hvec, device_vector<QueryInfo*>& _dvec);
-	void update_QueryInfo_entry_fromHostToDevice(QueryInfo* host_queryInfo, QueryInfo* device_queryInfo);
-	void free_queryInfo_vec_onDevice(  device_vector<QueryInfo*>& _dvec );
-	template <class T>
-	void copyVectorFromHostToDevice(  host_vector<T>& hvec, device_vector<T> & _dvec );
-	void update_QueryInfo_upperAndLowerBound_fromHostToDevice(QueryInfo* device_queryInfo, vector<float>& new_upperBoundDist, vector<float>& new_lowerBoundDist);
+	void copy_QueryInfo_vec_fromHostToDevice(host_vector<QueryInfo*>& hvec,
+			device_vector<QueryInfo*>& _dvec);
+	void update_QueryInfo_entry_fromHostToDevice(QueryInfo* host_queryInfo,
+			QueryInfo* device_queryInfo);
+	void free_queryInfo_vec_onDevice(device_vector<QueryInfo*>& _dvec);
+	template<class T>
+	void copyVectorFromHostToDevice(host_vector<T>& hvec,
+			device_vector<T> & _dvec);
+	void update_QueryInfo_upperAndLowerBound_fromHostToDevice(
+			QueryInfo* device_queryInfo, vector<float>& new_upperBoundDist,
+			vector<float>& new_lowerBoundDist);
 
 	void check_query_parameter();
-
-
 
 public:
 
@@ -122,7 +158,7 @@ public:
 	int topK;
 
 	// inverted list and the index
-	HDMap<int, InvlistEnt> hdmap; //Yiwei, imwithye@gmail.com
+	HDMap<int, int> hdmap; //Yiwei, imwithye@gmail.com
 
 	device_vector<InvlistEnt> d_invert_list;
 
@@ -131,7 +167,7 @@ public:
 	// query to keyword: each query associate with (query_spec_host.totalDimension) keywords
 	device_vector<QueryInfo*> d_query_info;
 	host_vector<QueryInfo*> h_query_info;
-	int sumQueryDims;//this variable record the total number of dimensions of all queries. It is used to indicate the number of kernels
+	int sumQueryDims; //this variable record the total number of dimensions of all queries. It is used to indicate the number of kernels
 
 	// result of query to feature result
 	device_vector<QueryFeatureEnt> d_query_feature;
@@ -161,24 +197,28 @@ public:
 
 };
 
-
 // compare upper bound of Result object
 struct Ubcomapre
 {
-	__host__ __device__ bool operator()(const Result &lhs, const Result &rhs) const
+	__host__ __device__ bool operator()(const Result &lhs,
+			const Result &rhs) const
 	{
-		if (lhs.query < rhs.query) {
+		if (lhs.query < rhs.query)
+		{
 			return true;
 		}
-		else if (lhs.query > rhs.query) {
+		else if (lhs.query > rhs.query)
+		{
 			return false;
 		}
 
 		// the query ids are the same
-		if ( lhs.ub == rhs.ub ) {
+		if (lhs.ub == rhs.ub)
+		{
 			return lhs.lb < rhs.lb;
 		}
-		else {
+		else
+		{
 			return lhs.ub < rhs.ub;
 		}
 	}
@@ -187,34 +227,42 @@ struct Ubcomapre
 // compare lower bound of Result object
 struct Lbcompare
 {
-	__host__ __device__ bool operator()(const Result &lhs, const Result &rhs) const
+	__host__ __device__ bool operator()(const Result &lhs,
+			const Result &rhs) const
 	{
-		if(lhs.query < rhs.query) {
+		if (lhs.query < rhs.query)
+		{
 			return true;
 		}
-		else if(lhs.query > rhs.query) {
+		else if (lhs.query > rhs.query)
+		{
 			return false;
 		}
 		return lhs.lb < rhs.lb;
 	}
 };
 
-
-
 struct PartUbcompare
 {
 	Result rhs;
 
 	__host__ __device__
-		PartUbcompare(Result& _pivot){rhs = _pivot;}
+	PartUbcompare(Result& _pivot)
+	{
+		rhs = _pivot;
+	}
 
 	__host__ __device__
-		bool operator()(const Result &lhs)
+	bool operator()(const Result &lhs)
 	{
-		if(lhs.ub < rhs.ub) return true;
-		else if(lhs.ub > rhs.ub) return false;
-		else if(lhs.lb < rhs.lb) return true;
-		else if(lhs.lb > rhs.lb) return false;
+		if (lhs.ub < rhs.ub)
+			return true;
+		else if (lhs.ub > rhs.ub)
+			return false;
+		else if (lhs.lb < rhs.lb)
+			return true;
+		else if (lhs.lb > rhs.lb)
+			return false;
 		return lhs.feature_id < rhs.feature_id;
 	}
 };
@@ -224,50 +272,57 @@ struct PartLbcompare
 	Result rhs;
 
 	__host__ __device__
-		PartLbcompare(Result& _pivot){rhs = _pivot;}
+	PartLbcompare(Result& _pivot)
+	{
+		rhs = _pivot;
+	}
 
 	__host__ __device__
-		bool operator()(const Result &lhs)
+	bool operator()(const Result &lhs)
 	{
-		if(lhs.lb < rhs.lb) return true;
-		else if(lhs.lb > rhs.lb) return false;
-		else if(lhs.ub < rhs.ub) return true;
-		else if(lhs.ub > rhs.ub) return false;
+		if (lhs.lb < rhs.lb)
+			return true;
+		else if (lhs.lb > rhs.lb)
+			return false;
+		else if (lhs.ub < rhs.ub)
+			return true;
+		else if (lhs.ub > rhs.ub)
+			return false;
 		return lhs.feature_id < rhs.feature_id;
 	}
 };
 
-
-
 struct gCount
-  {
+{
 	int thresh;
 
 	__host__ __device__
-	gCount(int& ct){ thresh = ct;}
+	gCount(int& ct)
+	{
+		thresh = ct;
+	}
 
-
-    __host__ __device__
-    bool operator()(const QueryFeatureEnt &x)
-    {
-      return x.count > thresh;
-    }
- };
-
+	__host__ __device__
+	bool operator()(const QueryFeatureEnt &x)
+	{
+		return x.count > thresh;
+	}
+};
 
 struct countFeature
 {
-   __host__ __device__
-   QueryFeatureEnt operator()(const QueryFeatureEnt& cf, const QueryFeatureEnt& entry) const {
+	__host__ __device__
+	QueryFeatureEnt operator()(const QueryFeatureEnt& cf,
+			const QueryFeatureEnt& entry) const
+	{
 
-	   QueryFeatureEnt qf;
+		QueryFeatureEnt qf;
 
-	   qf.count = cf.count+(entry.count);
+		qf.count = cf.count + (entry.count);
 
-	   return  qf;
-   }
-}; // end plus
-
-
+		return qf;
+	}
+};
+// end plus
 
 #endif /* GPUMANAGER_H_ */
