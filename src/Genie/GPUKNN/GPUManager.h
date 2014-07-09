@@ -158,7 +158,7 @@ public:
 	int topK;
 
 	// inverted list and the index
-	HDMap<int, int> hdmap; //Yiwei, imwithye@gmail.com
+	HDMap<int, KeyAndIndex> hdmap; //Yiwei, imwithye@gmail.com
 
 	device_vector<InvlistEnt> d_invert_list;
 

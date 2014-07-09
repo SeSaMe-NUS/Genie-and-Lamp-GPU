@@ -33,6 +33,11 @@ static void HandleError(cudaError_t err, const char *file, int line)
 /* the entry of a inverted list, this number must not exceed QuerySpecGPU.maxFeatureID */
 typedef int InvlistEnt;
 
+struct KeyAndIndex {
+	int key;
+	int index;
+};
+
 /* the entry of mapping from query to feature */
 struct QueryFeatureEnt
 {
