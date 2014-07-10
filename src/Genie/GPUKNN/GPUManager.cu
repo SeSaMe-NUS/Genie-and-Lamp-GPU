@@ -208,11 +208,12 @@ void GPUManager::init_GPU_query(vector<GpuQuery>& query_set)
 
 			// TODO: init keyword_indexMapping YIWEI;
 			//USE Mapping function
-			int dim = queryInfo->searchDim[i];
-			int key = (int) queryInfo->keyword[i] + 0.5
-					+ dim * max_value_per_dimension;
+
 			for (int j = 0; j < queryInfo->numOfDimensionToSearch; j++)
 			{
+				int dim = queryInfo->searchDim[j];
+				int key = (int) queryInfo->keyword[j] + 0.5
+					+ dim * max_value_per_dimension;
 				try
 				{
 					queryInfo->keyword_indexMapping[j] = hdmap.get_index(key);
