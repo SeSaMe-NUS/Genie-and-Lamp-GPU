@@ -290,10 +290,9 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 		int dim = query->searchDim[dimId];
 		GpuIndexDimensionEntry indexDimEntry = indexDimensionEntry_vec[dim];
 
-		int index_dim_value = keywordMap.mapping(data_keyword,
-				indexDimEntry.bucketWidth);
-		int keyword_indexMapping = index_dim_value
-				+ dim * max_value_per_dimension;
+		int keyword_indexMapping = query->keyword_indexMapping[dimId];
+		int key = invert_list_idx[keyword_indexMapping].key;
+		int index_dim_value = key % max_value_per_dimension;
 
 		//int keyword = y_dim_value + dim * MAX_DIM_VALUE;
 
@@ -330,16 +329,23 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 		// going downward
 		//int down_compute = invert_list_spec.numOfDocToExpand;
 		int down_compute = (*dev_numOfDocToExpand);
-		int index_dim_down_value = index_dim_value - down_pos; // move the position that last iteartion possessed.
 
-		while (index_dim_down_value - 1 >= indexDimEntry.minDomain // make sure dimension is above minimum dimension value
-		&& down_compute > 0	// make sure the number of compute element is above 0
-		&& index_dim_down_value >= index_dim_value - bound_down_search)
+		int down_offset = keyword_indexMapping - down_pos;
+		int down_key = invert_list_idx[down_offset].key;
+		int index_dim_down_value = down_key % max_value_per_dimension;
+
+		while (down_key / max_value_per_dimension == key / max_value_per_dimension
+		&& down_compute > 0 && down_offset >= 0)	// make sure the number of compute element is above 0
 		{
-			index_dim_down_value--;
+			down_offset--;
+			if(down_offset < 0) { down_offset = 0; break; }
+			int down_keyword = down_offset;
+			down_key = invert_list_idx[down_offset].key;
+			if(down_key / max_value_per_dimension != key / max_value_per_dimension || down_offset < 0) break;
+			index_dim_down_value = down_key % max_value_per_dimension;
 			//int down_keyword = down_value + dim * MAX_DIM_VALUE;
-			int down_keyword = index_dim_down_value
-					+ dim * max_value_per_dimension;
+
+
 
 			int invert_list_start =
 					down_keyword == 0 ? 0 : invert_list_idx[down_keyword - 1].index;
@@ -370,22 +376,25 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 
 				}
 			}
-
 			down_compute -= invert_list_size;
 		}
 
 		// going upward
 		//int up_compute = invert_list_spec.numOfDocToExpand;
 		int up_compute = (*dev_numOfDocToExpand);
-		int index_dim_up_value = index_dim_value + up_pos; // move the position that last iteartion possessed.
+		int up_offset = keyword_indexMapping + up_pos;
+		int up_key = invert_list_idx[up_offset].key;
+		int index_dim_up_value = up_key % max_value_per_dimension;
 
-		while (index_dim_up_value + 1 <= indexDimEntry.maxDomain // make sure dimension is below maximum dimension value
-		&& up_compute > 0 // make sure the number of compute element is above 0
-		&& index_dim_up_value <= index_dim_value + bound_up_search)
+		while (up_key / max_value_per_dimension == key / max_value_per_dimension
+		&& up_compute > 0)
 		{
-			index_dim_up_value++;
+			up_offset++;
 			//int up_keyword = up_value + dim * MAX_DIM_VALUE;
-			int up_keyword = index_dim_up_value + dim * max_value_per_dimension;
+			int up_keyword = up_offset;
+			up_key = invert_list_idx[up_offset].key;
+			if(up_key / max_value_per_dimension != key / max_value_per_dimension) break;
+			index_dim_up_value = up_key % max_value_per_dimension;
 
 			int invert_list_start =
 					up_keyword == 0 ? 0 : invert_list_idx[up_keyword - 1].index;
@@ -422,9 +431,16 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 		__syncthreads();
 		if (tid == 0)
 		{
-			query->lastPos[dimId].x = index_dim_value - index_dim_down_value;
-			query->lastPos[dimId].y = index_dim_up_value - index_dim_value;
+			query->lastPos[dimId].x = keyword_indexMapping - down_offset;
+			query->lastPos[dimId].y = up_offset - keyword_indexMapping;
 			//printf("Dimension %d with dim value %d is up value: %d and down value %d\n",bid,y_dim_value,query->lastPos[dim].x,query->lastPos[dim].y);
+//			if(blockIdx.x==0) {
+//				printf("keyword_indexMapping->%d down_offset->%d up_offset->%d\n", keyword_indexMapping, down_offset, up_offset);
+//				printf("up->%d down->%d\n", query->lastPos[dimId].y, query->lastPos[dimId].x);
+//				printf("key %d, key / max_value_per_dimension = %d\n", key, key / max_value_per_dimension);
+//				printf("up_key %d, up_key / max_value_per_dimension = %d\n", up_key, up_key / max_value_per_dimension);
+//				printf("down_key %d, down_key / max_value_per_dimension = %d\n", down_key, down_key / max_value_per_dimension);
+//			}
 		}
 	}
 
