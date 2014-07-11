@@ -13,6 +13,8 @@ class HDMap {
   HDMapAdaptor<K>* h_map;
   HDValueAdaptor<V>* d_value;
   bool frozen;
+public:
+  double timer;
 
 public:
   HDMap();

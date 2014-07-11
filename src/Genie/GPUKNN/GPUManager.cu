@@ -195,12 +195,11 @@ void GPUManager::init_GPU_query(vector<GpuQuery>& query_set)
 	}
 	else
 	{
-
 		this->invert_list_spec_host.numOfQuery = query_set.size();
 		//host_vector<QueryInfo*> h_query_info;
 
 		h_query_info.reserve(this->invert_list_spec_host.numOfQuery);
-
+		hdmap.timer = 0;
 		for (int i = 0; i < this->invert_list_spec_host.numOfQuery; i++)
 		{
 			QueryInfo *queryInfo = new QueryInfo(query_set[i]);
@@ -225,6 +224,7 @@ void GPUManager::init_GPU_query(vector<GpuQuery>& query_set)
 			}
 			h_query_info.push_back(queryInfo);
 		}
+		printf("HDMap mapping time, HDMap.timer: %f\n", hdmap.timer);
 
 		d_query_info.reserve(h_query_info.size());
 
@@ -532,6 +532,7 @@ void GPUManager::get_invert_list_from_binary_file(string filename,
 	int keyPosition = 0;
 	int offset = 0;
 	_maxFeatureID = -1;
+	hdmap.timer = 0;
 
 	cout << "file name is: " << filename << endl;
 
