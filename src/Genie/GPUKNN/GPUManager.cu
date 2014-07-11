@@ -690,7 +690,7 @@ void GPUManager::get_invert_list_from_binary_file(string filename,
 	cout << "host vector allocated" << endl;
 	//d_invert_list =new device_vector<device_vector>;
 	copyVectorFromHostToDevice(featureIdList_h, d_invert_list);
-	copyVectorFromHostToDevice(featureIdListIndex_h, d_invert_list_idx);
+	//copyVectorFromHostToDevice(featureIdListIndex_h, d_invert_list_idx);
 
 	init_time = (double) (clock() - start) / CLOCKS_PER_SEC;
 	cout << "Loading inverted index from CPU to GPU takes: " << init_time
@@ -740,7 +740,7 @@ void GPUManager::rand_inv_list()
 
 	// transfer to gpu
 	copyVectorFromHostToDevice(h_invert_list, d_invert_list);
-	copyVectorFromHostToDevice(h_invert_list_idx, d_invert_list_idx);
+	//copyVectorFromHostToDevice(h_invert_list_idx, d_invert_list_idx);
 }
 
 /**
@@ -821,20 +821,20 @@ void GPUManager::print_query_doucment_mapping()
 
 void GPUManager::print_invert_list()
 {
-	cout << "invert list" << endl;
-	host_vector<InvlistEnt> host_invert_list = (this->d_invert_list);
-	host_vector<InvlistEnt> host_invert_list_idx = (this->d_invert_list_idx);
-	for (int i = 0; i < host_invert_list_idx.size(); i++)
-	{
-		int dim = i / max_value_per_dimension;
-		int value = i % max_value_per_dimension;
-		cout << "(" << dim << "," << value << "):";
-		int start = i == 0 ? 0 : host_invert_list_idx[i - 1];
-		int end = host_invert_list_idx[i];
-		for (int j = start; j < end; j++)
-			cout << host_invert_list[j] << " ";
-		cout << endl;
-	}
+//	cout << "invert list" << endl;
+//	host_vector<InvlistEnt> host_invert_list = (this->d_invert_list);
+//	host_vector<InvlistEnt> host_invert_list_idx = (this->d_invert_list_idx);
+//	for (int i = 0; i < host_invert_list_idx.size(); i++)
+//	{
+//		int dim = i / max_value_per_dimension;
+//		int value = i % max_value_per_dimension;
+//		cout << "(" << dim << "," << value << "):";
+//		int start = i == 0 ? 0 : host_invert_list_idx[i - 1];
+//		int end = host_invert_list_idx[i];
+//		for (int j = start; j < end; j++)
+//			cout << host_invert_list[j] << " ";
+//		cout << endl;
+//	}
 	cout << "++++++++++++++++++++++++++++++++++++++" << endl;
 }
 

@@ -162,7 +162,7 @@ public:
 
 	device_vector<InvlistEnt> d_invert_list;
 
-	device_vector<int> d_invert_list_idx;
+	//device_vector<int> d_invert_list_idx;
 
 	// query to keyword: each query associate with (query_spec_host.totalDimension) keywords
 	device_vector<QueryInfo*> d_query_info;
