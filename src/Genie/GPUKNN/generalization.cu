@@ -255,6 +255,179 @@ __global__ void printConstMem()
  *
  *
  */
+template <class KEYWORDMAP, class LASTPOSMAP, class DISTFUNC>
+__global__ void compute_mapping_saving_pos_KernelPerDim_template_old(
+		QueryInfo** query_list,
+		InvlistEnt* invert_list, int* invert_list_idx,
+		QueryFeatureEnt* query_feature, bool point_search,
+		int max_value_per_dimension,
+		GpuIndexDimensionEntry* indexDimensionEntry_vec,
+		KEYWORDMAP keywordMap,
+		LASTPOSMAP lastPosMap,
+		DISTFUNC distFunc) {
+
+	//int bid = blockIdx.x; // mapped to different dimension of a query
+
+	int tid = threadIdx.x;
+	int block_size = blockDim.x;
+
+	int qid  =  blockIdx.x/dev_dimensionNum_perQuery[0];
+	int dimId= blockIdx.x%dev_dimensionNum_perQuery[0]; //mapped to different dimension index of A QUERY (note that: this dimId is to index the query dimension, i.e. by query->searchDim[dimId] to locate the true dimensions
+	QueryInfo* query = query_list[qid];
+
+
+	if (dimId < query->numOfDimensionToSearch) {
+		//for(int iter = 0; iter < query->numOfDimensionToSearch; iter++){
+
+		float dim_weight = query->dimWeight[dimId];
+		float dim_dist_func = query->distanceFunc[dimId];
+		float dim_lb_dist_func = query->lowerBoundDist[dimId];
+		float dim_ub_dist_func = query->upperBoundDist[dimId];
+		int bound_down_search = query->lowerBoundSearch[dimId];
+		int bound_up_search = query->upperBoundSearch[dimId];
+
+		int down_pos = query->lastPos[dimId].x;
+		int up_pos = query->lastPos[dimId].y;
+		float data_keyword = query->keyword[dimId];
+		int dim = query->searchDim[dimId];
+		GpuIndexDimensionEntry indexDimEntry = indexDimensionEntry_vec[dim];
+
+		int index_dim_value = keywordMap.mapping(data_keyword,indexDimEntry.bucketWidth);
+		int keyword_indexMapping = index_dim_value + dim * max_value_per_dimension;
+
+
+		//int keyword = y_dim_value + dim * MAX_DIM_VALUE;
+
+		if (down_pos == 0 && up_pos == 0) {
+			int invert_list_start = keyword_indexMapping == 0 ? 0 : invert_list_idx[keyword_indexMapping - 1];
+			int invert_list_end = invert_list_idx[keyword_indexMapping];
+			int invert_list_size = invert_list_end - invert_list_start;
+			int process_round = invert_list_size / block_size
+					+ (invert_list_size % block_size != 0);
+
+			for (int j = 0; j < process_round; j++) {
+				int idx = invert_list_start + j * block_size + tid;
+				if (idx < invert_list_end) {
+					InvlistEnt inv_ent = invert_list[idx];
+					int target_idx = qid*dev_maxFeatureID[0]+inv_ent;
+					//query_feature[target_idx].count += 1;
+					atomicAdd(&(query_feature[target_idx].count), 1);
+				}
+			}
+		}
+
+
+		if (point_search) {
+			//__syncthreads();
+			//continue;
+			return;
+		}
+
+
+
+		// going downward
+		//int down_compute = invert_list_spec.numOfDocToExpand;
+		int down_compute = (*dev_numOfDocToExpand);
+		int index_dim_down_value = index_dim_value - down_pos; // move the position that last iteartion possessed.
+
+
+		while (index_dim_down_value - 1 >= indexDimEntry.minDomain // make sure dimension is above minimum dimension value
+		&& down_compute > 0	// make sure the number of compute element is above 0
+		&& index_dim_down_value >= index_dim_value - bound_down_search) {
+			index_dim_down_value--;
+			//int down_keyword = down_value + dim * MAX_DIM_VALUE;
+			int down_keyword = index_dim_down_value + dim * max_value_per_dimension;
+
+			int invert_list_start =
+					down_keyword == 0 ? 0 : invert_list_idx[down_keyword - 1];
+			int invert_list_end = invert_list_idx[down_keyword];
+			int invert_list_size = invert_list_end - invert_list_start;
+			int process_round = invert_list_size / block_size
+					+ (invert_list_size % block_size != 0);
+
+			// calcuate the distance from the current point to the query along this dimension
+			float data_down_value = lastPosMap.map_indexToData_down(index_dim_down_value,indexDimEntry.bucketWidth);//the down value in data space
+			float true_dist = distFunc.dist(index_dim_value, data_down_value,
+					dim_dist_func, dim_lb_dist_func, dim_weight);
+
+			for (int j = 0; j < process_round; j++) {
+				int idx = invert_list_start + j * block_size + tid;
+				if (idx < invert_list_end) {
+					InvlistEnt inv_ent = invert_list[idx];
+					int target_idx = qid*dev_maxFeatureID[0]+inv_ent;
+					//int target_idx = bid*invert_list_spec.maxFeatureID+inv_ent;
+					//query_feature[target_idx].count += 1;
+					//query_feature[target_idx].ACD += true_dist;
+					atomicAdd(&(query_feature[target_idx].count), 1);
+					atomicAdd(&(query_feature[target_idx].ACD), true_dist);
+					//if(bid == 1) printf("query %d meet doc %d going down\n",bid,inv_ent);
+
+				}
+			}
+
+			down_compute -= invert_list_size;
+		}
+
+		// going upward
+		//int up_compute = invert_list_spec.numOfDocToExpand;
+		int up_compute = (*dev_numOfDocToExpand);
+		int index_dim_up_value = index_dim_value + up_pos; // move the position that last iteartion possessed.
+
+
+		while (index_dim_up_value + 1 <= indexDimEntry.maxDomain // make sure dimension is below maximum dimension value
+		&& up_compute > 0 // make sure the number of compute element is above 0
+		&& index_dim_up_value <= index_dim_value + bound_up_search) {
+			index_dim_up_value++;
+			//int up_keyword = up_value + dim * MAX_DIM_VALUE;
+			int up_keyword = index_dim_up_value + dim * max_value_per_dimension;
+
+			int invert_list_start =
+					up_keyword == 0 ? 0 : invert_list_idx[up_keyword - 1];
+			int invert_list_end = invert_list_idx[up_keyword];
+			int invert_list_size = invert_list_end - invert_list_start;
+			int process_round = invert_list_size / block_size
+					+ (invert_list_size % block_size != 0);
+
+			// calcuate the distance from the current point to the query along this dimension
+			float data_up_value = lastPosMap.map_indexToData_up((index_dim_up_value),indexDimEntry.bucketWidth);
+			float true_dist = distFunc.dist(index_dim_value, data_up_value,
+					dim_dist_func, dim_ub_dist_func, dim_weight);
+
+			for (int j = 0; j < process_round; j++) {
+				int idx = invert_list_start + j * block_size + tid;
+				if (idx < invert_list_end) {
+					InvlistEnt inv_ent = invert_list[idx];
+					int target_idx = qid*dev_maxFeatureID[0]+inv_ent;
+					/*int target_idx = bid*invert_list_spec.maxFeatureID+inv_ent;
+					 query_feature[target_idx].count += 1;
+					 query_feature[target_idx].ACD += true_dist;*/
+					atomicAdd(&(query_feature[target_idx].count), 1);
+					atomicAdd(&(query_feature[target_idx].ACD), true_dist);
+					//if(bid == 1) printf("query %d meet doc %d going up\n",bid,inv_ent);
+				}
+			}
+
+			up_compute -= invert_list_size;
+		}
+
+		__syncthreads();
+		if (tid == 0) {
+			query->lastPos[dimId].x = index_dim_value - index_dim_down_value;
+			query->lastPos[dimId].y = index_dim_up_value - index_dim_value;
+			//printf("Dimension %d with dim value %d is up value: %d and down value %d\n",bid,y_dim_value,query->lastPos[dim].x,query->lastPos[dim].y);
+		}
+	}
+
+}
+
+
+
+/**
+ * edit:by Yiwei
+ * Use dense array.
+ *
+ *
+ */
 template<class KEYWORDMAP, class LASTPOSMAP, class DISTFUNC>
 __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 		QueryInfo** query_list, InvlistEnt* invert_list, KeyAndIndex* invert_list_idx,

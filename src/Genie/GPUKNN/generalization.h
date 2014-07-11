@@ -217,6 +217,14 @@ __global__ void compute_mapping_saving_pos_KernelPerDim_template(
 		LASTPOSMAP lastPosMap, DISTFUNC distFunc);
 
 template<class KEYWORDMAP, class LASTPOSMAP, class DISTFUNC>
+__global__ void compute_mapping_saving_pos_KernelPerDim_template_old(
+		QueryInfo** query_list, InvlistEnt* invert_list, int* invert_list_idx,
+		QueryFeatureEnt* query_feature, bool point_search,
+		int max_value_per_dimension,
+		GpuIndexDimensionEntry* indexDimensionEntry_vec, KEYWORDMAP keywordMap,
+		LASTPOSMAP lastPosMap, DISTFUNC distFunc);
+
+template<class KEYWORDMAP, class LASTPOSMAP, class DISTFUNC>
 __device__ void blk_get_eachQueryDimensionBound_template(QueryInfo* queryInfo,
 		int block_num_search_dim,
 		GpuIndexDimensionEntry* indexDimensionEntry_vec,
