@@ -206,6 +206,7 @@ template __device__ float  blk_aggregation_sharedMemory<Blk_Max>( float* data_ar
 
 __global__ void printQueryInfo(QueryInfo** query_list, int size)
 {
+#ifdef __CUDA__ARCH__
 	if ( threadIdx.x < size )
 	{
 		QueryInfo* temp = query_list[threadIdx.x];
@@ -213,6 +214,7 @@ __global__ void printQueryInfo(QueryInfo** query_list, int size)
 
 //		(*query_list)[threadIdx.x].print();
 	}
+#endif
 }
 
 __global__ void  printConstMem(){
